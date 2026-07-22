@@ -1,0 +1,21 @@
+{
+  "name": "hivemind",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Your group chat, compiled. A Telegram bot + realtime dashboard that turns any group chat into a live database — built on the Base44 backend for the Dev Build-Off 2026.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@base44/sdk": "^0.8.40",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
