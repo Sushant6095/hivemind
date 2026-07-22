@@ -1,0 +1,23 @@
+{
+  "name": "Membership",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "user_email": { "type": "string", "description": "Dashboard login email" },
+    "tg_user_id": {
+      "type": "string",
+      "description": "Telegram user id, linked when the member runs /link in the group",
+      "rls": { "read": { "user_condition": { "role": "admin" } }, "write": false }
+    },
+    "tg_display_name": { "type": "string" },
+    "role": { "type": "string", "enum": ["owner", "member"], "default": "member" },
+    "member_emails": { "type": "array", "items": { "type": "string" }, "description": "RLS mirror of the parent space's member list" }
+  },
+  "required": ["space_id", "user_email"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

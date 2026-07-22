@@ -1,0 +1,22 @@
+{
+  "name": "Question",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "text": { "type": "string" },
+    "asked_by": { "type": "string" },
+    "status": { "type": "string", "enum": ["open", "answered"], "default": "open" },
+    "answer": { "type": "string" },
+    "answered_via": { "type": "string", "enum": ["human", "agent", "research"] },
+    "sources": { "type": "array", "items": { "type": "string" }, "description": "URLs when answered via internet research" },
+    "source_msg_ids": { "type": "array", "items": { "type": "string" } },
+    "member_emails": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["space_id", "text"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

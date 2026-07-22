@@ -1,0 +1,25 @@
+{
+  "name": "RawMessage",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "tg_update_id": { "type": "string", "description": "Telegram update id — idempotency/dedup key (Telegram retries webhooks)" },
+    "tg_message_id": { "type": "string" },
+    "sender_tg_id": { "type": "string", "rls": { "read": { "user_condition": { "role": "admin" } }, "write": false } },
+    "sender_name": { "type": "string" },
+    "text": { "type": "string" },
+    "media_type": { "type": "string", "enum": ["photo", "document", "voice", "none"], "default": "none" },
+    "tg_file_id": { "type": "string", "description": "Telegram file_id for lazy download by ingest-media" },
+    "media_file_uri": { "type": "string", "description": "Base44 private-storage URI after ingestion" },
+    "sent_at": { "type": "string", "format": "date-time" },
+    "processed": { "type": "boolean", "default": false },
+    "member_emails": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["space_id", "tg_message_id", "sent_at"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

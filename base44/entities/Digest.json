@@ -1,0 +1,21 @@
+{
+  "name": "Digest",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "period_start": { "type": "string", "format": "date-time" },
+    "period_end": { "type": "string", "format": "date-time" },
+    "content_md": { "type": "string", "description": "LLM-written narrative digest of the week" },
+    "stats": { "type": "object", "additionalProperties": true },
+    "cover_image_url": { "type": "string" },
+    "emailed_to": { "type": "array", "items": { "type": "string" } },
+    "member_emails": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["space_id"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

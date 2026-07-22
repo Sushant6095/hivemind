@@ -1,0 +1,42 @@
+{
+  "name": "Expense",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "payer_name": { "type": "string" },
+    "amount": { "type": "number" },
+    "currency": { "type": "string", "default": "INR" },
+    "description": { "type": "string" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "price": { "type": "number" }
+        }
+      },
+      "description": "Itemized lines when extracted from a receipt photo (ExtractDataFromUploadedFile)"
+    },
+    "split": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "share": { "type": "number" }
+        }
+      }
+    },
+    "receipt_file_uri": { "type": "string", "description": "Private storage URI; dashboard fetches a signed URL on demand" },
+    "source_msg_ids": { "type": "array", "items": { "type": "string" } },
+    "member_emails": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["space_id", "amount"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

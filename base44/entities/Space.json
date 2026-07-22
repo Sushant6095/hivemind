@@ -1,0 +1,25 @@
+{
+  "name": "Space",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "Display name of the space (usually the Telegram group title)" },
+    "tg_chat_id": { "type": "string", "description": "Telegram chat id this space is bound to (unique)" },
+    "tg_chat_title": { "type": "string" },
+    "invite_code": { "type": "string", "description": "One-time code posted by the bot to claim this space from the dashboard" },
+    "member_emails": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Dashboard users who may read this space. Denormalized onto all child records for RLS."
+    },
+    "cover_image_url": { "type": "string", "description": "AI-generated weekly group portrait (GenerateImage)" },
+    "timezone": { "type": "string", "default": "Asia/Kolkata" },
+    "stats": { "type": "object", "additionalProperties": true, "description": "Rolling counters: messages_seen, decisions, commitments, ..." }
+  },
+  "required": ["name", "tg_chat_id"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

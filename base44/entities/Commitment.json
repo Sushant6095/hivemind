@@ -1,0 +1,23 @@
+{
+  "name": "Commitment",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "who_name": { "type": "string", "description": "Display name of the person who owes this" },
+    "who_tg_id": { "type": "string", "rls": { "read": { "user_condition": { "role": "admin" } }, "write": false } },
+    "what": { "type": "string" },
+    "due_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["open", "done", "overdue"], "default": "open" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "source_msg_ids": { "type": "array", "items": { "type": "string" } },
+    "last_nudged_at": { "type": "string", "format": "date-time" },
+    "member_emails": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["space_id", "who_name", "what"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}
