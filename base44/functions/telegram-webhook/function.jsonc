@@ -1,0 +1,6 @@
+{
+  // Public HTTP endpoint — Telegram pushes updates here.
+  // Register it with scripts/set-webhook.sh after `base44 functions deploy`.
+  "name": "telegram-webhook",
+  "entry": "entry.ts"
+}

@@ -1,0 +1,14 @@
+{
+  "name": "ingest-media",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "entity",
+      "name": "on_media_message",
+      "description": "Store chat media in private storage; compile receipts into itemized Expenses",
+      "is_active": true,
+      "entity_name": "RawMessage",
+      "event_types": ["create"]
+    }
+  ]
+}
