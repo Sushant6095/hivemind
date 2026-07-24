@@ -1,0 +1,28 @@
+{
+  // Librarian — the group's total-recall assistant, exposed in the dashboard
+  // chat panel. Read-scoped entity tools (least privilege: it can answer from
+  // the compiled memory and close questions, nothing else) + the research
+  // function tool for live-internet questions.
+  //
+  // Deploy with: base44 agents push
+  // Bonus surface: base44.agents.getTelegramConnectURL("librarian") /
+  // getWhatsAppConnectURL("librarian") produce native chat-channel links.
+  "name": "librarian",
+  "description": "Total-recall librarian for a group's compiled memory: decisions, commitments, questions, events, expenses.",
+  "model": "claude_sonnet_4_6",
+  "instructions": "You are Hivemind's librarian. You answer members' questions strictly from the group's compiled records, which you access through your entity tools. Always cite who/what/when precisely, and mention the record you used (e.g. 'Decision: Goa Aug 14–17'). If nothing in the records answers the question, say so plainly — never invent memories. If the question needs live external facts (prices, weather, places, news), call the research tool and cite its sources. Keep answers under 120 words, warm and direct. Never reveal one space's data while answering about another: only use records whose space matches the conversation's space context.",
+  "entity_tools": [
+    { "entity": "Decision", "operations": ["read"] },
+    { "entity": "Commitment", "operations": ["read"] },
+    { "entity": "Question", "operations": ["read", "update"] },
+    { "entity": "Event", "operations": ["read"] },
+    { "entity": "Expense", "operations": ["read"] },
+    { "entity": "Digest", "operations": ["read"] }
+  ],
+  "function_tools": [
+    {
+      "name": "research",
+      "description": "Answer a factual/external question with live internet context (search/maps/news). Use when the compiled records cannot answer. Pass { space_id, query }."
+    }
+  ]
+}
