@@ -1,0 +1,25 @@
+src/api/base44Client.js
+  s_a9a120c5d10337::t_79efd84a72db27 27-37
+  s_a9a120c5d10337::t_93cfa866c18954 3-7,10
+  s_a9a120c5d10337::t_a214c02f68486b 11
+README.md
+  s_a9a120c5d10337::t_8453bb3bac9541 61-62
+base44/.types/types.d.ts
+  s_a9a120c5d10337::t_4007f36502c68a 1-210
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "f8f338f24ca3e89964edf8fb15bbad3cd4790272",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
