@@ -1,0 +1,29 @@
+base44/functions/ingest-media/function.jsonc
+  s_a9a120c5d10337::t_6523ef46ca7c54 2-4,6
+base44/functions/weekly-digest/function.jsonc
+  s_a9a120c5d10337::t_a7d12645c3c386 2-3,5
+base44/functions/process-messages/function.jsonc
+  s_a9a120c5d10337::t_059c91f3564539 2-4,6
+base44/functions/telegram-webhook/entry.ts
+  s_a9a120c5d10337::t_f40bce9be20345 114-117,126,143-148
+  s_a9a120c5d10337::t_f20dacf433b7e0 3-4,8
+  s_a9a120c5d10337::t_9cb99289bc3060 149
+base44/functions/nudge-commitments/function.jsonc
+  s_a9a120c5d10337::t_d897f48e3d436c 2-3,5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "817f0736fe3ace5dcc05e0d230cc76929607c2c0",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
