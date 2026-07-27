@@ -4,6 +4,7 @@ import Board from "./components/Board.jsx";
 import LiveFeed from "./components/LiveFeed.jsx";
 import Ledger from "./components/Ledger.jsx";
 import AskPanel from "./components/AskPanel.jsx";
+import ImportPanel from "./components/ImportPanel.jsx";
 
 // Hivemind dashboard — one screen, deliberately thin: its whole job is to make
 // the backend visible. Every panel is fed by entity realtime subscriptions.
@@ -89,9 +90,9 @@ export default function App() {
       ) : (
         <>
           <nav className="tabs">
-            {["board", "feed", "ledger", "ask"].map((t) => (
+            {["board", "feed", "ledger", "ask", "import"].map((t) => (
               <button key={t} className={tab === t ? "tab active" : "tab"} onClick={() => setTab(t)}>
-                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : "Ask the librarian"}
+                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : t === "ask" ? "Ask the librarian" : "Import"}
               </button>
             ))}
           </nav>
@@ -100,6 +101,7 @@ export default function App() {
             {tab === "feed" && <LiveFeed spaceId={space.id} />}
             {tab === "ledger" && <Ledger spaceId={space.id} />}
             {tab === "ask" && <AskPanel spaceId={space.id} />}
+            {tab === "import" && <ImportPanel spaceId={space.id} />}
           </main>
         </>
       )}
