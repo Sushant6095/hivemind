@@ -1,0 +1,29 @@
+README.md
+  s_a9a120c5d10337::t_acf8f5b837904a 13-23
+base44/entities/ImportJob.json
+  s_a9a120c5d10337::t_9a43fd9f205535 1-19
+base44/functions/import-history/entry.ts
+  s_a9a120c5d10337::t_5b7584424a2acf 1-154
+base44/functions/import-history/function.jsonc
+  s_a9a120c5d10337::t_3e48d30aafb24f 1-4
+src/App.jsx
+  s_a9a120c5d10337::t_2966ce98bf4d4f 7,93,95,104
+src/components/ImportPanel.jsx
+  s_a9a120c5d10337::t_794d9bc20b1b85 1-130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "33bfbd29d935983ca4895c030c9f82a502f8dae5",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
