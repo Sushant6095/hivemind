@@ -58,6 +58,8 @@ Telegram group
 | **Auth** | Dashboard login via Base44 auth; membership enforced in functions and RLS |
 | **Email** | `SendEmail` weekly digests |
 | **Hosting** | SPA deployed to Base44 hosting |
+| **Typed SDK** | `base44 types generate` emits `base44/.types/types.d.ts`, augmenting `@base44/sdk`'s `EntityTypeRegistry` from the 9 entity schemas |
+| **Typed client** | `src/api/base44Client.js` consumes it — `listDecisions()` returns `Decision[]` straight from the generated types, no hand-written shapes |
 
 ## Repo layout
 
