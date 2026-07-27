@@ -1,14 +1,7 @@
 {
+  // Media/receipt pipeline. Invoked explicitly from telegram-webhook with
+  // { data: <created RawMessage> } for media messages (Workflows runtime — no
+  // legacy entity automation).
   "name": "ingest-media",
-  "entry": "entry.ts",
-  "automations": [
-    {
-      "type": "entity",
-      "name": "on_media_message",
-      "description": "Store chat media in private storage; compile receipts into itemized Expenses",
-      "is_active": true,
-      "entity_name": "RawMessage",
-      "event_types": ["create"]
-    }
-  ]
+  "entry": "entry.ts"
 }

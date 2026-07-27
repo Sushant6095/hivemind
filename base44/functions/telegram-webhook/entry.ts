@@ -1,11 +1,11 @@
 // telegram-webhook — public HTTP endpoint Telegram POSTs every group update to.
 //
-// Responsibilities (keep this function FAST — quick-ack, heavy work happens in
-// the process-messages / ingest-media automations):
+// Responsibilities (keep this function FAST — quick-ack, heavy work runs in the
+// process-messages / ingest-media functions, invoked fire-and-forget below):
 //   1. Verify Telegram's secret token header (set via scripts/set-webhook.sh).
 //   2. Deduplicate by update_id (Telegram retries until it gets a 200).
 //   3. Handle slash commands (/start /link /ask /research /done /digest).
-//   4. Persist everything else as a RawMessage row → entity automation fires.
+//   4. Persist everything else as a RawMessage row → invoke the compiler chain.
 //
 // Uses asServiceRole: webhook calls carry no Base44 user context.
 
@@ -111,7 +111,10 @@ Deno.serve(async (req: Request) => {
     return Response.json({ ok: true });
   }
 
-  // --- 4. persist as RawMessage → automations take over --------------------
+  // --- 4. persist as RawMessage → invoke the compiler chain ----------------
+  // This app runs the Workflows runtime, so legacy entity automations are off.
+  // We invoke the pipeline explicitly and do NOT await it — keep the webhook a
+  // quick-ack (Telegram retries on slow responses).
   const media = msg.photo?.length
     ? { media_type: "photo", tg_file_id: msg.photo.at(-1).file_id }
     : msg.document
@@ -120,7 +123,7 @@ Deno.serve(async (req: Request) => {
         ? { media_type: "voice", tg_file_id: msg.voice.file_id }
         : { media_type: "none" };
 
-  await sr.entities.RawMessage.create({
+  const raw = await sr.entities.RawMessage.create({
     space_id: space.id,
     tg_update_id: updateId,
     tg_message_id: String(msg.message_id),
@@ -136,6 +139,13 @@ Deno.serve(async (req: Request) => {
   await sr.entities.Space.update(space.id, {
     stats: { ...(space.stats ?? {}), messages_seen: ((space.stats?.messages_seen ?? 0) as number) + 1 },
   });
+
+  // Fire-and-forget the compiler pass (debounces bursts internally). For media
+  // messages, also fire the receipt/media pipeline with the created record.
+  base44.functions.invoke("process-messages", { space_id: space.id }).catch(() => {});
+  if (media.media_type !== "none") {
+    base44.functions.invoke("ingest-media", { data: raw }).catch(() => {});
+  }
 
   return Response.json({ ok: true });
 });

@@ -1,15 +1,6 @@
 {
+  // Daily 09:00 IST (cron "30 3 * * *"). Runs as a scheduled Workflow that
+  // invokes this function (legacy automation removed — Workflows runtime).
   "name": "nudge-commitments",
-  "entry": "entry.ts",
-  "automations": [
-    {
-      "type": "scheduled",
-      "name": "daily_morning_nudge",
-      "description": "09:00 IST daily — mark overdue commitments and nudge each space",
-      "is_active": true,
-      "schedule_mode": "recurring",
-      "schedule_type": "cron",
-      "cron_expression": "30 3 * * *"
-    }
-  ]
+  "entry": "entry.ts"
 }

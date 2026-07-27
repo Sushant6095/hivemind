@@ -1,26 +1,7 @@
 {
+  // Compiler pass. Invoked explicitly from telegram-webhook after each RawMessage
+  // (this app runs the Workflows runtime, so legacy entity automations are off).
+  // The 5-min burst_sweeper lives as a scheduled Workflow calling this with {"sweep": true}.
   "name": "process-messages",
-  "entry": "entry.ts",
-  "automations": [
-    {
-      // The compiler pass: fires on every new RawMessage, debounces bursts internally.
-      "type": "entity",
-      "name": "on_raw_message_created",
-      "description": "Compile new chat messages into Decisions/Commitments/Questions/Events/Expenses",
-      "is_active": true,
-      "entity_name": "RawMessage",
-      "event_types": ["create"]
-    },
-    {
-      // Sweeper: catches bursts that settled without a follow-up message.
-      "type": "scheduled",
-      "name": "burst_sweeper",
-      "description": "Every 5 minutes, force-compile any settled unprocessed bursts",
-      "is_active": true,
-      "schedule_mode": "recurring",
-      "schedule_type": "cron",
-      "cron_expression": "*/5 * * * *",
-      "function_args": { "sweep": true }
-    }
-  ]
+  "entry": "entry.ts"
 }

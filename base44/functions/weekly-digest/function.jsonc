@@ -1,15 +1,6 @@
 {
+  // Sunday 18:00 IST (cron "30 12 * * 0") as a scheduled Workflow; also on-demand
+  // via /digest in telegram-webhook (legacy automation removed — Workflows runtime).
   "name": "weekly-digest",
-  "entry": "entry.ts",
-  "automations": [
-    {
-      "type": "scheduled",
-      "name": "sunday_digest",
-      "description": "Sunday 18:00 IST — narrative digest + AI cover, emailed to all members",
-      "is_active": true,
-      "schedule_mode": "recurring",
-      "schedule_type": "cron",
-      "cron_expression": "30 12 * * 0"
-    }
-  ]
+  "entry": "entry.ts"
 }
