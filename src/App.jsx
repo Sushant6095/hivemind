@@ -4,6 +4,9 @@ import Board from "./components/Board.jsx";
 import LiveFeed from "./components/LiveFeed.jsx";
 import Ledger from "./components/Ledger.jsx";
 import AskPanel from "./components/AskPanel.jsx";
+import Digest from "./components/Digest.jsx";
+import StatsHeader from "./components/StatsHeader.jsx";
+import ToastHost from "./components/ToastHost.jsx";
 
 // Hivemind dashboard — one screen, deliberately thin: its whole job is to make
 // the backend visible. Every panel is fed by entity realtime subscriptions.
@@ -88,17 +91,19 @@ export default function App() {
         </div>
       ) : (
         <>
+          <StatsHeader space={space} />
           <nav className="tabs">
-            {["board", "feed", "ledger", "ask"].map((t) => (
+            {["board", "feed", "ledger", "digest", "ask"].map((t) => (
               <button key={t} className={tab === t ? "tab active" : "tab"} onClick={() => setTab(t)}>
-                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : "Ask the librarian"}
+                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : t === "digest" ? "Digest" : "Ask the librarian"}
               </button>
             ))}
           </nav>
           <main>
-            {tab === "board" && <Board spaceId={space.id} />}
+            {tab === "board" && <Board space={space} />}
             {tab === "feed" && <LiveFeed spaceId={space.id} />}
             {tab === "ledger" && <Ledger spaceId={space.id} />}
+            {tab === "digest" && <Digest spaceId={space.id} />}
             {tab === "ask" && <AskPanel spaceId={space.id} />}
           </main>
         </>
@@ -107,6 +112,7 @@ export default function App() {
       <footer className="muted">
         Compiled by the Base44 backend — entities · RLS · realtime · functions · automations · agents · AI · storage
       </footer>
+      <ToastHost />
     </div>
   );
 }

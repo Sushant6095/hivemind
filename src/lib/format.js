@@ -22,3 +22,13 @@ export function money(amount, currency = "INR") {
   const sym = currency === "INR" ? "₹" : `${currency} `;
   return `${sym}${Number(amount ?? 0).toLocaleString("en-IN")}`;
 }
+
+// Deep-link a compiled record back to its source Telegram message.
+// Supergroup ids start with "-100"; strip it for the t.me/c/ path. Plain groups
+// (no "-100") and demo spaces can't be deep-linked → return null (hide the link).
+export function tgSourceLink(space, msgIds) {
+  const chatId = space?.tg_chat_id ? String(space.tg_chat_id) : "";
+  const msgId = Array.isArray(msgIds) ? msgIds[0] : msgIds;
+  if (!chatId.startsWith("-100") || !msgId) return null;
+  return `https://t.me/c/${chatId.slice(4)}/${msgId}`;
+}

@@ -115,8 +115,68 @@ h1 { font-size: 22px; letter-spacing: 0.3px; }
 }
 .ask button:disabled { opacity: 0.5; cursor: default; }
 
+/* provenance link — sits in a card's .meta row */
+.src { margin-left: auto; color: var(--honey-dim); text-decoration: none; font-size: 11px; white-space: nowrap; }
+.src:hover { color: var(--honey); }
+/* group a second right-side item next to the first (which owns margin-left:auto) */
+.meta .src + .mini,
+.meta .mini + .src { margin-left: 8px; }
+
+/* stats header — space pulse strip above the tabs */
+.stats-header { display: flex; gap: 10px; margin: 16px 0 4px; flex-wrap: wrap; }
+.stat-pill { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 16px; min-width: 120px; }
+.stat-pill b { display: block; font-size: 18px; color: var(--honey); min-height: 22px; }
+.stat-pill span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* loading skeletons */
+@keyframes shimmer { to { background-position: -200% 0; } }
+.skeleton {
+  background: linear-gradient(100deg, var(--card) 40%, var(--line) 50%, var(--card) 60%);
+  background-size: 200% 100%; animation: shimmer 1.3s linear infinite; border: 1px solid var(--line);
+}
+.skeleton-text { display: inline-block; width: 64px; border-radius: 6px; background: linear-gradient(100deg, var(--line) 40%, var(--panel) 50%, var(--line) 60%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+
+/* receipt modal */
+.modal { position: fixed; inset: 0; background: rgba(6,7,10,0.78); display: grid; place-items: center; padding: 20px; z-index: 50; }
+.modal-body { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; max-width: min(560px, 92vw); max-height: 88vh; overflow: auto; }
+.modal-body img { display: block; max-width: 100%; max-height: 72vh; border-radius: 8px; }
+.modal-close { margin-top: 10px; }
+
+/* toasts */
+.toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 60; width: min(360px, 90vw); }
+.toast { padding: 10px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.4); animation: pop 0.25s ease; }
+.toast.error { background: #2a1b1b; color: var(--red); border: 1px solid #4a2b2b; }
+.toast.info { background: #23261c; color: var(--honey); border: 1px solid var(--honey-dim); }
+
+/* digest tab */
+.digest { max-width: 720px; }
+.portrait-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 18px; }
+.portrait-gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); }
+.digest-card { padding: 16px 18px; margin-bottom: 14px; }
+.md-body { margin-top: 8px; }
+.md-h { color: var(--honey); font-size: 15px; margin: 12px 0 4px; }
+.md-p { color: var(--text); font-size: 14px; margin: 6px 0; line-height: 1.6; }
+.md-ul { margin: 6px 0 6px 18px; }
+.md-ul li { color: var(--text); font-size: 14px; line-height: 1.6; }
+.md-body strong { color: var(--honey); }
+
 /* empty + footer */
 .empty { text-align: center; max-width: 420px; }
 .empty h2 { margin-bottom: 8px; }
 .empty p { color: var(--muted); }
 footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; text-align: center; }
+
+/* mobile ≤480px — the board naturally collapses to one column (auto-fit) */
+@media (max-width: 480px) {
+  .app { padding: 12px; }
+  header { gap: 12px; }
+  .user { margin-left: 0; width: 100%; order: 3; }
+  .spaces { order: 2; }
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px -12px; padding: 0 12px; }
+  .tab { flex: none; white-space: nowrap; }
+  .stats-header { gap: 8px; }
+  .stat-pill { flex: 1; min-width: 0; padding: 8px 10px; text-align: center; }
+  .stat-pill b { font-size: 16px; }
+  .feed, .ledger, .ask, .digest { max-width: 100%; }
+  .bubble { max-width: 92%; }
+}
