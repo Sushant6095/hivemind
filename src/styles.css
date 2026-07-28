@@ -266,3 +266,17 @@ footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line);
 /* Receipt modal must sit ABOVE the provenance drawer rather than tying at 50
    and depending on DOM order. */
 .modal { z-index: 60; }
+
+/* ── Ops tab: latency percentiles, success rate, job state machine ────────── */
+.ops { max-width: 760px; }
+.ops-h { font-size: 14px; color: var(--muted); margin: 18px 0 10px; }
+.ops-job { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; cursor: default; }
+.ops-job:hover { border-color: var(--line); transform: none; }
+.ops-when { margin-left: auto; }
+.ops-err { width: 100%; color: var(--red); font-size: 12px; margin-top: 6px; word-break: break-word; }
+.ops-note { font-size: 12px; margin-top: 16px; line-height: 1.6; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-done { color: var(--green); border-color: var(--green); }
+.badge-running { color: var(--honey); border-color: var(--honey); }
+.badge-retrying { color: var(--honey-dim); border-color: var(--honey-dim); }
+.badge-dead { color: var(--red); border-color: var(--red); }

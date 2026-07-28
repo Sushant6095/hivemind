@@ -1,0 +1,25 @@
+{
+  "name": "CompileJob",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "state": { "type": "string", "enum": ["running", "done", "retrying", "dead"], "default": "running" },
+    "attempts": { "type": "number", "default": 1 },
+    "max_attempts": { "type": "number", "default": 5 },
+    "next_attempt_at": { "type": "string", "format": "date-time" },
+    "batch_size": { "type": "number" },
+    "extracted": { "type": "number" },
+    "duration_ms": { "type": "number" },
+    "last_error": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
+    "member_emails": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["space_id", "state"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

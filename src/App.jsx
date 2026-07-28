@@ -9,6 +9,7 @@ import Digest from "./components/Digest.jsx";
 import StatsHeader from "./components/StatsHeader.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 import ApiKeysPanel from "./components/ApiKeysPanel.jsx";
+import OpsPanel from "./components/OpsPanel.jsx";
 import EngineRoom from "./components/EngineRoom.jsx";
 
 const TAB_LABELS = {
@@ -19,6 +20,7 @@ const TAB_LABELS = {
   ask: "Ask the librarian",
   import: "Import",
   api: "API",
+  ops: "Ops",
   engine: "Engine Room",
 };
 
@@ -107,7 +109,7 @@ export default function App() {
 
   const space = useMemo(() => spaces.find((s) => s.id === spaceId), [spaces, spaceId]);
   const tabs = useMemo(
-    () => ["board", "feed", "ledger", "digest", "ask", "import", "api", ...(isOwner ? ["engine"] : [])],
+    () => ["board", "feed", "ledger", "digest", "ask", "import", "api", "ops", ...(isOwner ? ["engine"] : [])],
     [isOwner],
   );
 
@@ -199,6 +201,7 @@ export default function App() {
             {tab === "ask" && <AskPanel spaceId={space.id} />}
             {tab === "import" && <ImportPanel spaceId={space.id} />}
             {tab === "api" && <ApiKeysPanel spaceId={space.id} />}
+            {tab === "ops" && <OpsPanel spaceId={space.id} />}
             {tab === "engine" && isOwner && <EngineRoom space={space} />}
           </main>
         </>

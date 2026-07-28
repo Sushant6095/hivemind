@@ -1,0 +1,7 @@
+{
+  // Durability layer. Runs every 5 minutes as a scheduled WORKFLOW
+  // (cron "*/5 * * * *") — NOT a legacy `automations` block, which this app's
+  // Workflows runtime rejects with 409. Dormant until that Workflow is created.
+  "name": "compile-reaper",
+  "entry": "entry.ts"
+}

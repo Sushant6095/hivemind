@@ -1,0 +1,21 @@
+{
+  "name": "MetricEvent",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "kind": { "type": "string", "enum": ["compile", "ask", "ingest", "nudge", "digest"] },
+    "ok": { "type": "boolean", "default": true },
+    "duration_ms": { "type": "number" },
+    "model": { "type": "string" },
+    "input_chars": { "type": "number" },
+    "meta": { "type": "object" },
+    "member_emails": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["space_id", "kind"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

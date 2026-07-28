@@ -38,6 +38,9 @@ const CONTEXT_WINDOW = 15;
 // arbitrary, but it is consistent across all readers, which is all that mutual
 // exclusion requires.
 const LEASE_TTL_MS = 150_000; // > worst-case LLM round trip
+const DAILY_LLM_CAP = 200; // per space, per UTC day
+const RETRY_BASE_MS = 30_000; // 30s → 60s → 120s → 240s → dead-letter
+const MAX_ATTEMPTS = 5;
 
 async function acquireLease(sr: any, key: string) {
   const now = Date.now();
@@ -183,6 +186,17 @@ async function compileLocked(sr: any, spaceId: string, unprocessed: any[]) {
   const spaceRec = await sr.entities.Space.get(spaceId).catch(() => null);
   const memberEmails: string[] = spaceRec?.member_emails ?? [];
 
+  // --- per-space daily spend cap ------------------------------------------
+  // Reuses Space.stats — no new entity. A runaway loop or an abusive group
+  // cannot silently burn the whole LLM budget.
+  const today = new Date().toISOString().slice(0, 10);
+  const stats = spaceRec?.stats ?? {};
+  const calls = stats.llm_day === today ? (stats.llm_calls ?? 0) : 0;
+  if (calls >= DAILY_LLM_CAP) return { skipped: "daily_cap", calls };
+  await sr.entities.Space.update(spaceId, {
+    stats: { ...stats, llm_day: today, llm_calls: calls + 1 },
+  });
+
   const fmt = (m: any) => `[id:${m.tg_message_id}] ${m.sent_at} ${m.sender_name}: ${m.text}`;
   const prompt = [
     SYSTEM_PROMPT,
@@ -200,6 +214,63 @@ async function compileLocked(sr: any, spaceId: string, unprocessed: any[]) {
     ...unprocessed.map(fmt),
   ].join("\n");
 
+  // --- durable job record --------------------------------------------------
+  // Before this existed, a thrown InvokeLLM left the batch processed:false
+  // forever with no record that anything failed and no bounded retry. Every
+  // batch now ends in `done` or `dead` — never silently dropped.
+  const t0 = Date.now();
+  const job = await sr.entities.CompileJob.create({
+    space_id: spaceId,
+    state: "running",
+    attempts: 1,
+    max_attempts: MAX_ATTEMPTS,
+    batch_size: unprocessed.length,
+    started_at: new Date(t0).toISOString(),
+    member_emails: memberEmails,
+  }).catch(() => null);
+
+  try {
+    return await runExtraction(sr, spaceId, unprocessed, prompt, memberEmails, job, t0);
+  } catch (err) {
+    // Exponential backoff: 30s, 60s, 120s, 240s, then dead-letter. Messages
+    // stay processed:false — the reaper owns the retry, not this invocation.
+    const attempts = job?.attempts ?? 1;
+    const delay = RETRY_BASE_MS * Math.pow(2, attempts - 1);
+    if (job?.id) {
+      await sr.entities.CompileJob.update(job.id, {
+        state: attempts >= MAX_ATTEMPTS ? "dead" : "retrying",
+        attempts,
+        last_error: String(err).slice(0, 500),
+        next_attempt_at: new Date(Date.now() + delay).toISOString(),
+        duration_ms: Date.now() - t0,
+        finished_at: new Date().toISOString(),
+      }).catch(() => {});
+    }
+    await sr.entities.MetricEvent.create({
+      space_id: spaceId,
+      kind: "compile",
+      ok: false,
+      duration_ms: Date.now() - t0,
+      model: "gemini_3_flash",
+      input_chars: prompt.length,
+      meta: { batch: unprocessed.length, error: String(err).slice(0, 200) },
+      member_emails: memberEmails,
+    }).catch(() => {});
+    return { failed: true, job: job?.id ?? null };
+  }
+}
+
+// The extraction itself. Split out so the job/metric bookkeeping above reads as
+// one unit and every throw lands in exactly one catch.
+async function runExtraction(
+  sr: any,
+  spaceId: string,
+  unprocessed: any[],
+  prompt: string,
+  memberEmails: string[],
+  job: any,
+  t0: number,
+) {
   const result: any = await sr.integrations.Core.InvokeLLM({
     prompt,
     model: "gemini_3_flash", // cheap + fast; the librarian uses a bigger model
@@ -254,7 +325,30 @@ async function compileLocked(sr: any, spaceId: string, unprocessed: any[]) {
     );
   }
 
-  return { compiled: unprocessed.length, extracted: extractions.filter((e) => e.kind !== "none").length };
+  const written = extractions.filter((e) => e && e.kind !== "none" && (e.confidence ?? 0) >= 0.5).length;
+
+  if (job?.id) {
+    await sr.entities.CompileJob.update(job.id, {
+      state: "done",
+      extracted: written,
+      duration_ms: Date.now() - t0,
+      finished_at: new Date().toISOString(),
+    }).catch(() => {});
+  }
+
+  // Fire-and-forget metric — observability must never break the pipeline.
+  await sr.entities.MetricEvent.create({
+    space_id: spaceId,
+    kind: "compile",
+    ok: true,
+    duration_ms: Date.now() - t0,
+    model: "gemini_3_flash",
+    input_chars: prompt.length,
+    meta: { batch: unprocessed.length, extracted: written },
+    member_emails: memberEmails,
+  }).catch(() => {});
+
+  return { compiled: unprocessed.length, extracted: written };
 }
 
 Deno.serve(async (req: Request) => {
