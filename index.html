@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hivemind — your group chat, compiled</title>
     <meta name="description" content="Add one bot to any Telegram group and watch conversation compile into decisions, commitments, questions, events and expenses — live." />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>" />
+    <!-- PWA (ws-d) — favicon.svg from ws-g is the primary icon; keep manifest + apple meta -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon.svg" />
     <meta name="theme-color" content="#0e0f13" />
@@ -13,6 +14,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Hivemind" />
+
+    <!-- Social cards — og:image is absolute; REPLACE-AFTER-DEPLOY host is a placeholder until first deploy -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://REPLACE-AFTER-DEPLOY.base44.app/" />
+    <meta property="og:title" content="Hivemind — your group chat, compiled." />
+    <meta property="og:description" content="Add one bot to any Telegram group. Decisions, commitments, questions, events and expenses — compiled into a live database while you chat." />
+    <meta property="og:image" content="https://REPLACE-AFTER-DEPLOY.base44.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Hivemind — your group chat, compiled." />
+    <meta name="twitter:description" content="Add one bot to any Telegram group. Decisions, commitments, questions, events and expenses — compiled into a live database while you chat." />
+    <meta name="twitter:image" content="https://REPLACE-AFTER-DEPLOY.base44.app/og.png" />
   </head>
   <body>
     <div id="root"></div>

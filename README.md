@@ -4,6 +4,13 @@
 
 Hivemind is **not a chatbot**. Chatbots answer when spoken to. Hivemind is an event-driven **compiler**: webhook → extraction pipeline → typed entities → realtime fan-out → scheduled actors → permission-scoped agent. The frontend is thin on purpose — **the backend is the product.**
 
+## Links
+
+- **Live dashboard** — https://REPLACE-AFTER-DEPLOY.base44.app *(placeholder — set after first deploy)*
+- **Landing page** — https://REPLACE-AFTER-DEPLOY.base44.app/landing.html
+- **Add the bot** — [@HivemindBot](https://t.me/HivemindBot) *(handle to be confirmed)*
+- **Source** — https://github.com/Sushant6095/hivemind
+
 ## The 15-second demo
 
 1. Friend types: *"ok final: Goa Aug 14, budget ₹40k, Priya books flights by Friday."*
