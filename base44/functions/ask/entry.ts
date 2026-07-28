@@ -67,5 +67,13 @@ Deno.serve(async (req: Request) => {
   const text = typeof answer === "string" ? answer : JSON.stringify(answer);
   if (chat_id) await tgSend(chat_id, `🐝 ${text}`, reply_to);
 
+  // analytics: best-effort, never breaks the answer path
+  try {
+    (base44 as any).analytics?.track({
+      eventName: "ask_answered",
+      properties: { space_id, via: chat_id ? "telegram" : "dashboard" },
+    });
+  } catch (_) { /* fire-and-forget */ }
+
   return Response.json({ ok: true, answer: text });
 });

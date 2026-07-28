@@ -9,6 +9,18 @@ import Digest from "./components/Digest.jsx";
 import StatsHeader from "./components/StatsHeader.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 import ApiKeysPanel from "./components/ApiKeysPanel.jsx";
+import EngineRoom from "./components/EngineRoom.jsx";
+
+const TAB_LABELS = {
+  board: "Board",
+  feed: "Live feed",
+  ledger: "Ledger",
+  digest: "Digest",
+  ask: "Ask the librarian",
+  import: "Import",
+  api: "API",
+  engine: "Engine Room",
+};
 
 // Hivemind dashboard — one screen, deliberately thin: its whole job is to make
 // the backend visible. Every panel is fed by entity realtime subscriptions.
@@ -22,6 +34,7 @@ export default function App() {
   const [spaceId, setSpaceId] = useState(null);
   const [bindState, setBindState] = useState(null); // null | "binding" | "done" | "error"
   const [tab, setTab] = useState(panelMode ? "feed" : "board");
+  const [isOwner, setIsOwner] = useState(false); // gates the owner-only Engine Room tab
 
   useEffect(() => {
     if (panelMode) document.body.classList.add("panel-mode");
@@ -61,7 +74,31 @@ export default function App() {
     };
   }, [user, bindState]);
 
+  // --- owner check drives the Engine Room tab (Membership.role === "owner") --
+  useEffect(() => {
+    if (!user || !spaceId) {
+      setIsOwner(false);
+      return;
+    }
+    let cancelled = false;
+    base44.entities.Membership.filter({ space_id: spaceId, user_email: user.email }, undefined, 1)
+      .then((rows) => {
+        if (cancelled) return;
+        const owner = rows?.[0]?.role === "owner";
+        setIsOwner(owner);
+        if (!owner) setTab((t) => (t === "engine" ? "board" : t));
+      })
+      .catch(() => !cancelled && setIsOwner(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [user, spaceId]);
+
   const space = useMemo(() => spaces.find((s) => s.id === spaceId), [spaces, spaceId]);
+  const tabs = useMemo(
+    () => ["board", "feed", "ledger", "digest", "ask", "import", "api", ...(isOwner ? ["engine"] : [])],
+    [isOwner],
+  );
 
   if (!user) return <div className="center muted">Signing you in…</div>;
 
@@ -102,9 +139,9 @@ export default function App() {
         <>
           <StatsHeader space={space} />
           <nav className="tabs">
-            {["board", "feed", "ledger", "digest", "ask", "import", "api"].map((t) => (
+            {tabs.map((t) => (
               <button key={t} className={tab === t ? "tab active" : "tab"} onClick={() => setTab(t)}>
-                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : t === "digest" ? "Digest" : t === "ask" ? "Ask the librarian" : t === "import" ? "Import" : "API"}
+                {TAB_LABELS[t]}
               </button>
             ))}
           </nav>
@@ -116,6 +153,7 @@ export default function App() {
             {tab === "ask" && <AskPanel spaceId={space.id} />}
             {tab === "import" && <ImportPanel spaceId={space.id} />}
             {tab === "api" && <ApiKeysPanel spaceId={space.id} />}
+            {tab === "engine" && isOwner && <EngineRoom space={space} />}
           </main>
         </>
       )}

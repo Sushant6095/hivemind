@@ -58,5 +58,10 @@ Deno.serve(async (req: Request) => {
     nudged++;
   }
 
+  // analytics: best-effort, never breaks the nudge sweep
+  try {
+    (base44 as any).analytics?.track({ eventName: "nudge_sent", properties: { count: nudged } });
+  } catch (_) { /* fire-and-forget */ }
+
   return Response.json({ ok: true, spaces_nudged: nudged });
 });
