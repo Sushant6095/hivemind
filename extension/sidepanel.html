@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Hivemind Sidekick</title>
+    <style>
+      html, body { margin: 0; height: 100%; }
+      body {
+        background: #0e0f13; color: #8b8fa3;
+        font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+        display: grid; place-items: center; text-align: center; padding: 24px;
+      }
+      .logo { font-size: 40px; }
+      a { color: #f5b83d; }
+      code { color: #f5b83d; word-break: break-all; }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="logo">🐝</div>
+      <p id="msg">Opening Hivemind…</p>
+    </div>
+    <script>
+      // A side panel can't point at a remote URL from the manifest, so this
+      // bundled page redirects the panel to the deployed dashboard in panel mode.
+      //
+      // REPLACE-AFTER-DEPLOY: set DASHBOARD_ORIGIN to your deployed Base44 app
+      // origin (e.g. "https://hivemind-xxxx.base44.app"). Until then the panel
+      // just shows this notice.
+      const DASHBOARD_ORIGIN = "https://REPLACE-AFTER-DEPLOY.base44.app";
+
+      if (DASHBOARD_ORIGIN.includes("REPLACE-AFTER-DEPLOY")) {
+        document.getElementById("msg").innerHTML =
+          'Set <code>DASHBOARD_ORIGIN</code> in <code>sidepanel.html</code> to your deployed Hivemind URL, then reload the extension.';
+      } else {
+        location.replace(DASHBOARD_ORIGIN.replace(/\/$/, "") + "/?panel=1");
+      }
+    </script>
+  </body>
+</html>

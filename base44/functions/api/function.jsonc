@@ -1,0 +1,9 @@
+{
+  // Public HTTP endpoint — the headless read API + owner-only key management.
+  //   GET  ?key=&resource=decisions|commitments|expenses|events|ledger  → clean JSON
+  //   POST { action: "generate" | "revoke", space_id, ... }             → owner-only
+  // No automations, no writes to app data. Reads are gated by the API key,
+  // key management is gated by space ownership (Membership.role === "owner").
+  "name": "api",
+  "entry": "entry.ts"
+}

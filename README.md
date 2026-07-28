@@ -59,6 +59,18 @@ Telegram group
 | **Email** | `SendEmail` weekly digests |
 | **Hosting** | SPA deployed to Base44 hosting |
 
+## Surfaces
+
+The same compiled backend is reachable from four surfaces — the dashboard is
+just the most visible one.
+
+| Surface | What it is | Where |
+|---|---|---|
+| **Dashboard** | Realtime web app — board, live feed, ledger, librarian | `src/` |
+| **Telegram bot** | In-chat capture + `/ask`, `/research`, nudges, digests | `base44/functions/` |
+| **Chrome Sidekick** | MV3 side-panel extension pinning the dashboard (`?panel=1`) beside any tab | `extension/` |
+| **Headless API** | Keyed, read-only HTTP/JSON over a space's memory (`decisions`, `commitments`, `expenses`, `events`, `ledger`) for scripts & automations | `base44/functions/api/` · [docs/API.md](./docs/API.md) |
+
 ## Repo layout
 
 ```

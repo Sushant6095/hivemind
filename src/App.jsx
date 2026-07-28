@@ -4,16 +4,24 @@ import Board from "./components/Board.jsx";
 import LiveFeed from "./components/LiveFeed.jsx";
 import Ledger from "./components/Ledger.jsx";
 import AskPanel from "./components/AskPanel.jsx";
+import ApiKeysPanel from "./components/ApiKeysPanel.jsx";
 
 // Hivemind dashboard — one screen, deliberately thin: its whole job is to make
 // the backend visible. Every panel is fed by entity realtime subscriptions.
+
+// ?panel=1 → embedded (Chrome side panel) mode: chrome hidden, defaults to feed.
+const panelMode = new URLSearchParams(window.location.search).has("panel");
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [spaces, setSpaces] = useState([]);
   const [spaceId, setSpaceId] = useState(null);
   const [bindState, setBindState] = useState(null); // null | "binding" | "done" | "error"
-  const [tab, setTab] = useState("board");
+  const [tab, setTab] = useState(panelMode ? "feed" : "board");
+
+  useEffect(() => {
+    if (panelMode) document.body.classList.add("panel-mode");
+  }, []);
 
   // --- auth gate ----------------------------------------------------------
   useEffect(() => {
@@ -89,9 +97,9 @@ export default function App() {
       ) : (
         <>
           <nav className="tabs">
-            {["board", "feed", "ledger", "ask"].map((t) => (
+            {["board", "feed", "ledger", "ask", "api"].map((t) => (
               <button key={t} className={tab === t ? "tab active" : "tab"} onClick={() => setTab(t)}>
-                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : "Ask the librarian"}
+                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : t === "ask" ? "Ask the librarian" : "API"}
               </button>
             ))}
           </nav>
@@ -100,6 +108,7 @@ export default function App() {
             {tab === "feed" && <LiveFeed spaceId={space.id} />}
             {tab === "ledger" && <Ledger spaceId={space.id} />}
             {tab === "ask" && <AskPanel spaceId={space.id} />}
+            {tab === "api" && <ApiKeysPanel spaceId={space.id} />}
           </main>
         </>
       )}
