@@ -1,0 +1,62 @@
+src/App.jsx
+  s_a9a120c5d10337::t_59898ebceca8e2 105,107
+  s_8e31990a69eeea::t_3a6887e7710d83 11,16-18,24-28,118
+README.md
+  s_a9a120c5d10337::t_7b159741a5e1e8 75-86
+base44/entities/ApiKey.json
+  s_a9a120c5d10337::t_73b01208b091da 1-17
+base44/functions/api/entry.ts
+  s_a9a120c5d10337::t_9ecf700e0d5318 1-124
+base44/functions/api/function.jsonc
+  s_a9a120c5d10337::t_22bb66a9e07b26 1-9
+docs/API.md
+  s_a9a120c5d10337::t_fed887a7c12234 1-147
+extension/README.md
+  s_a9a120c5d10337::t_96cd872b877e3d 1-53
+extension/background.js
+  s_a9a120c5d10337::t_f81b1d9378d092 1-4
+extension/icons/generate-icons.mjs
+  s_a9a120c5d10337::t_2061073e0d067d 1-120
+extension/manifest.json
+  s_a9a120c5d10337::t_0b3017a7a104de 1-22
+extension/sidepanel.html
+  s_a9a120c5d10337::t_3420ab226a64d5 1-40
+extension/zip.sh
+  s_a9a120c5d10337::t_6a2635bc3bfb2c 1-14
+src/components/ApiKeysPanel.jsx
+  s_a9a120c5d10337::t_30c3f26e1853a6 1-125
+src/styles.css
+  s_df3610447018f4::t_01b9f3e4e23330 163-193
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "15b72c630a0c495a7810b2453017abd65909cddc",
+  "prompts": {},
+  "sessions": {
+    "s_8e31990a69eeea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a003a5a6-5c4f-47b6-b57a-e19dda70579b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    },
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    },
+    "s_df3610447018f4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a7add4e47d9c29630",
+        "model": "unknown"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
