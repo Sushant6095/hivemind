@@ -1,0 +1,30 @@
+README.md
+  s_a9a120c5d10337::t_3daaed79122a55 7-13
+public/favicon.svg
+  s_a9a120c5d10337::t_5d1ed5c06dcb68 1-3,5-7
+  s_a9a120c5d10337::t_c5281d16dc56e2 4
+landing.html
+  s_a9a120c5d10337::t_9dc4fe3cf50ef0 323
+  s_a9a120c5d10337::t_0876e4362f4bdf 228
+  s_a9a120c5d10337::t_cef742ffa07175 8-21
+index.html
+  s_a9a120c5d10337::t_4515e99c66a647 8-21
+public/landing.html
+  s_a9a120c5d10337::t_8d4c57ffe79f4d 1-655
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "0b2ee747a0a6e380bbe9ae28023a1434a84b454c",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
