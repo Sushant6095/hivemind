@@ -1,0 +1,47 @@
+base44/functions/api/entry.ts
+  s_a9a120c5d10337::t_b530584e283fb3 78
+  s_a9a120c5d10337::t_a5fdd14fcfd291 1-77,79-124
+base44/functions/api/function.jsonc
+  s_a9a120c5d10337::t_06c7cbb3f2f84a 1-9
+extension/sidepanel.html
+  s_a9a120c5d10337::t_d78513fd055f31 1-40
+src/components/ApiKeysPanel.jsx
+  s_a9a120c5d10337::t_4216118da578f6 1-125
+extension/background.js
+  s_a9a120c5d10337::t_eedfaa71262930 1-4
+extension/icons/generate-icons.mjs
+  s_a9a120c5d10337::t_50a4b4266c8192 1-120
+src/App.jsx
+  s_a9a120c5d10337::t_8ae0e450e67bc2 7,12-14,20-24
+  s_a9a120c5d10337::t_0a4f98d6a66fb5 100,102,111
+docs/API.md
+  s_a9a120c5d10337::t_58d23eb4161fd6 1-147
+base44/entities/ApiKey.json
+  s_a9a120c5d10337::t_86471e37e84616 1-17
+extension/zip.sh
+  s_a9a120c5d10337::t_2f735e2a80f679 1-14
+extension/README.md
+  s_a9a120c5d10337::t_1c753336ebccdc 1-53
+extension/manifest.json
+  s_a9a120c5d10337::t_df0cb3622591cc 1-22
+src/styles.css
+  s_a9a120c5d10337::t_796a5252a1232e 118-148
+README.md
+  s_a9a120c5d10337::t_50c8804771bd75 62-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "b8c00c9ca05b52031d02ec1cf5f6c71a7c158e18",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
