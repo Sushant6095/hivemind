@@ -1,0 +1,64 @@
+src/App.jsx
+  s_a9a120c5d10337::t_4e18c758404b97 97,99
+  s_df3610447018f4::t_1749bf232bdd15 8-10,95,104,107,117
+README.md
+  s_a9a120c5d10337::t_decc5c3d7cafff 82,105-106
+base44/functions/get-signed-url/entry.ts
+  s_a9a120c5d10337::t_a3ff59a50823bc 1-28
+base44/functions/get-signed-url/function.jsonc
+  s_a9a120c5d10337::t_d384e895b0c0a4 1-4
+index.html
+  s_a9a120c5d10337::t_9c6dd842905fac 9-15
+public/icon.svg
+  s_a9a120c5d10337::t_efc6445e200610 1-6
+public/manifest.json
+  s_a9a120c5d10337::t_6d7ed8c140fe62 1-14
+public/sw.js
+  s_a9a120c5d10337::t_1fcb13711ae233 1-31
+src/components/AskPanel.jsx
+  s_a9a120c5d10337::t_eb7887c1007067 3,27-28,30
+src/components/Board.jsx
+  s_a9a120c5d10337::t_4b89888b50f4a1 3-4,11,15,17-24,42,45-73,78-82,87-125,130-143,148-163,168-181,186-199,204-219,221-233
+src/components/Digest.jsx
+  s_a9a120c5d10337::t_8369c6b7ee2836 1-86
+src/components/StatsHeader.jsx
+  s_a9a120c5d10337::t_a2145ae759a178 1-52
+src/components/ToastHost.jsx
+  s_a9a120c5d10337::t_481ec9bb1973e0 1-30
+src/lib/format.js
+  s_a9a120c5d10337::t_da05b0f60fd16f 25-34
+src/lib/markdown.js
+  s_a9a120c5d10337::t_588a0e1021a967 1-52
+src/lib/markdown.selfcheck.mjs
+  s_a9a120c5d10337::t_ced3ca182956bf 1-16
+src/lib/toast.js
+  s_a9a120c5d10337::t_255f4060e1b0ef 1-15
+src/main.jsx
+  s_a9a120c5d10337::t_549c5162f32802 7-13
+src/styles.css
+  s_a9a120c5d10337::t_62906dd995ca81 118-162,168-182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "5d56fd5ad9063df5be05ed4dfdb5b80c6b55d5da",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    },
+    "s_df3610447018f4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a7add4e47d9c29630",
+        "model": "unknown"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
