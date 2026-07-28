@@ -1,0 +1,23 @@
+src/components/Provenance.jsx
+  s_a9a120c5d10337::t_020a77feca4e7e 5-7,9-18,21-22,27-50,52,54-59,75,79,92,94-102,104-105,108,116-119
+src/components/Board.jsx
+  s_a9a120c5d10337::t_bfeaa0a2bedb5d 1,10-12,52-73,111-116,132,139,142,153,156,180,182-183,192,203,205-206,225,236,238-239,248,259,267,278,296,304,311
+src/styles.css
+  s_a9a120c5d10337::t_02ff4232eb7d6f 260-268
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "87222c7df6ddec4be40e59999cec07cadab15be3",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
