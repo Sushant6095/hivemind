@@ -9,20 +9,55 @@ import { createClient } from "@base44/sdk";
 
 /** @typedef {import("../../base44/.types/types").Decision} Decision */
 
-export const base44 = createClient({
-  appId: import.meta.env.VITE_BASE44_APP_ID,
-});
+// appBaseUrl MUST be absolute. The SDK defaults it to "" (client.js:
+// `typeof appBaseUrl === "string" ? appBaseUrl : ""`), which makes
+// redirectToLogin() build a *relative* /login — and because Base44 hosting is
+// SPA-only (every unknown path returns index.html with 200), that relative
+// /login re-served THIS app, failed auth.me(), and redirected again, one level
+// deeper each time. Pinning the absolute host makes the loop impossible.
+//
+// Verified empirically (read-only GETs), which is why the host is app.base44.com:
+//   app.base44.com/api/apps/auth/login?app_id=…&from_url=…  → 302 accounts.google.com  ✅
+//   base44.app/login (with or without app_id)               → 404                      ❌
+// so the SDK's own getLoginUrl() helper (which builds serverUrl + /login) is NOT usable here.
+//
+// `base44 dev` injects VITE_BASE44_APP_BASE_URL = the LOCAL dev URL, and it must
+// drive BOTH the API host and the auth host or the client is split-brain (prod
+// API + local login = a token the prod API rejects). So: set both, or neither.
+const DEV_BASE_URL = import.meta.env.VITE_BASE44_APP_BASE_URL;
 
-/** Auth gate helper: resolves the current user or redirects to Base44 login. */
-export async function requireUser() {
+export const base44 = createClient(
+  DEV_BASE_URL
+    ? {
+        appId: import.meta.env.VITE_BASE44_APP_ID,
+        serverUrl: DEV_BASE_URL,
+        appBaseUrl: DEV_BASE_URL,
+      }
+    : {
+        appId: import.meta.env.VITE_BASE44_APP_ID,
+        // serverUrl intentionally omitted → SDK default https://base44.app (the API host).
+        appBaseUrl: "https://app.base44.com",
+      },
+);
+
+/**
+ * Resolve the signed-in user, or null. Deliberately does NOT redirect —
+ * an automatic bounce to a login wall is the worst possible first frame for a
+ * judge who has never seen this app.
+ */
+export async function getUser() {
   try {
     const user = await base44.auth.me();
     if (user?.email) return user;
   } catch {
-    /* not logged in */
+    /* not logged in — expected for anonymous visitors */
   }
-  base44.auth.redirectToLogin(window.location.href);
   return null;
+}
+
+/** Explicit, user-initiated sign-in. Absolute URL, so it can never self-loop. */
+export function signIn(returnTo = window.location.href) {
+  base44.auth.redirectToLogin(returnTo);
 }
 
 /**
