@@ -1,0 +1,36 @@
+index.html
+  s_a9a120c5d10337::t_5e9615682758d2 8-9
+  s_df3610447018f4::t_034595379c94b7 17-29
+README.md
+  s_a9a120c5d10337::t_591630dbad0a37 7-13
+landing.html
+  s_a9a120c5d10337::t_ffcb35ff70f0c7 8-21,228,323
+public/favicon.svg
+  s_a9a120c5d10337::t_60d4442ae85319 1-7
+public/landing.html
+  s_a9a120c5d10337::t_2979d4c6c3d4d9 1-655
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "77726cbe803e3d46a697e6bc35d3a6ad084039a4",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    },
+    "s_df3610447018f4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a7add4e47d9c29630",
+        "model": "unknown"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
