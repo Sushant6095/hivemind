@@ -1,0 +1,39 @@
+src/components/EngineRoom.jsx
+  s_a9a120c5d10337::t_1cc20bda589bb2 1-147
+base44/functions/research/entry.ts
+  s_a9a120c5d10337::t_db15e12f4a6159 63-70
+base44/functions/ingest-media/entry.ts
+  s_a9a120c5d10337::t_7222551241900b 88-95
+base44/functions/nudge-commitments/entry.ts
+  s_a9a120c5d10337::t_f9c46b56c8b7cb 61-65
+base44/functions/weekly-digest/entry.ts
+  s_a9a120c5d10337::t_22a8f955de3524 107-112
+base44/functions/process-messages/entry.ts
+  s_a9a120c5d10337::t_59d9bbcf8fc498 171-181
+  s_a9a120c5d10337::t_fdd5147687f064 189-195
+base44/functions/ask/entry.ts
+  s_a9a120c5d10337::t_7ae13291063007 70-77
+src/App.jsx
+  s_a9a120c5d10337::t_98439d28d44b8d 20
+  s_a9a120c5d10337::t_e7fb7b16e92fb6 7-9
+  s_a9a120c5d10337::t_32d4b2761db2ae 117,119,128
+  s_a9a120c5d10337::t_082f5896bbf854 56-75,77
+README.md
+  s_a9a120c5d10337::t_1e932b8a6b41ef 62-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "ef7956c4c4235f6d11a80720dc89ee021b026a0d",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
