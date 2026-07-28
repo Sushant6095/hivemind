@@ -2,9 +2,14 @@ import React, { useEffect, useState, useCallback } from "react";
 import { base44 } from "../api/base44Client.js";
 import { fmtDate, money, tgSourceLink } from "../lib/format.js";
 import { toast } from "../lib/toast.js";
+import Provenance from "./Provenance.jsx";
 
 // Board — five live columns. Each column loads once, then stays current purely
 // through entity realtime subscriptions (create/update/delete events).
+//
+// Every card is clickable: it opens the Provenance drawer showing the exact
+// source messages the row was compiled from. Buttons inside a card must
+// stopPropagation() or they would also open the drawer.
 
 function useLiveEntity(name, spaceId) {
   const [rows, setRows] = useState([]);
@@ -27,7 +32,9 @@ function useLiveEntity(name, spaceId) {
       const rec = event.data;
       if (rec?.space_id !== spaceId) return;
       setRows((cur) => {
-        if (event.type === "create") return [rec, ...cur.filter((x) => x.id !== event.id)];
+        // _live marks a row that arrived over realtime while we were watching,
+        // so the card can announce itself. Client-side only — never written back.
+        if (event.type === "create") return [{ ...rec, _live: true }, ...cur.filter((x) => x.id !== event.id)];
         if (event.type === "update") return cur.map((x) => (x.id === event.id ? rec : x));
         if (event.type === "delete") return cur.filter((x) => x.id !== event.id);
         return cur;
@@ -53,6 +60,13 @@ function Sources({ space, ids }) {
   );
 }
 
+// Receipt count — how many source messages this row was compiled from.
+function Receipts({ ids }) {
+  const n = (ids ?? []).length;
+  if (!n) return null;
+  return <span className="receipts">🧾 {n}</span>;
+}
+
 function SkeletonCards() {
   return (
     <>
@@ -71,6 +85,7 @@ export default function Board({ space }) {
   const [expenses, , xLoading] = useLiveEntity("Expense", spaceId);
 
   const [receipt, setReceipt] = useState(null); // null | "loading" | url
+  const [inspect, setInspect] = useState(null); // row whose provenance is open
 
   const closeCommitment = useCallback(
     async (c) => {
@@ -125,17 +140,22 @@ export default function Board({ space }) {
 
   return (
     <div className="board">
-      <section className="col">
+      <section className="col" data-kind="decision">
         <h3>✅ Decisions <span className="count">{decisions.filter((d) => d.status === "active").length}</span></h3>
         {dLoading ? (
           <SkeletonCards />
         ) : (
           decisions.map((d) => (
-            <article key={d.id} className={`card pop ${d.status === "superseded" ? "dim" : ""}`}>
+            <article
+              key={d.id}
+              className={`card pop ${d.status === "superseded" ? "dim" : ""} ${d._live ? "fresh-card" : ""}`}
+              onClick={() => setInspect(d)}
+            >
               <b>{d.title}</b>
               {d.detail && <p>{d.detail}</p>}
               <div className="meta">
                 {d.status === "superseded" ? "superseded" : fmtDate(d.decided_at ?? d.created_date)}
+                <Receipts ids={d.source_msg_ids} />
                 <Sources space={space} ids={d.source_msg_ids} />
               </div>
             </article>
@@ -143,19 +163,32 @@ export default function Board({ space }) {
         )}
       </section>
 
-      <section className="col">
+      <section className="col" data-kind="commitment">
         <h3>🤝 Commitments <span className="count">{commitments.filter((c) => c.status !== "done").length}</span></h3>
         {cLoading ? (
           <SkeletonCards />
         ) : (
           commitments.map((c) => (
-            <article key={c.id} className={`card pop ${c.status === "overdue" ? "danger" : ""} ${c.status === "done" ? "dim" : ""}`}>
+            <article
+              key={c.id}
+              className={`card pop ${c.status === "overdue" ? "danger" : ""} ${c.status === "done" ? "dim" : ""} ${c._live ? "fresh-card" : ""}`}
+              onClick={() => setInspect(c)}
+            >
               <b>{c.who_name}</b> — {c.what}
               <div className="meta">
                 {c.status === "done" ? "done ✓" : c.due_at ? `due ${fmtDate(c.due_at)}` : "no deadline"}
+                <Receipts ids={c.source_msg_ids} />
                 <Sources space={space} ids={c.source_msg_ids} />
                 {c.status !== "done" && (
-                  <button className="mini" onClick={() => closeCommitment(c)}>mark done</button>
+                  <button
+                    className="mini"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      closeCommitment(c);
+                    }}
+                  >
+                    mark done
+                  </button>
                 )}
               </div>
             </article>
@@ -163,17 +196,22 @@ export default function Board({ space }) {
         )}
       </section>
 
-      <section className="col">
+      <section className="col" data-kind="question">
         <h3>❓ Questions <span className="count">{questions.filter((q) => q.status === "open").length}</span></h3>
         {qLoading ? (
           <SkeletonCards />
         ) : (
           questions.map((q) => (
-            <article key={q.id} className={`card pop ${q.status === "answered" ? "dim" : ""}`}>
+            <article
+              key={q.id}
+              className={`card pop ${q.status === "answered" ? "dim" : ""} ${q._live ? "fresh-card" : ""}`}
+              onClick={() => setInspect(q)}
+            >
               <b>{q.text}</b>
               {q.answer && <p className="answer">→ {q.answer}</p>}
               <div className="meta">
                 {q.status === "answered" ? `answered via ${q.answered_via}` : "open"}
+                <Receipts ids={q.source_msg_ids} />
                 <Sources space={space} ids={q.source_msg_ids} />
               </div>
             </article>
@@ -181,17 +219,22 @@ export default function Board({ space }) {
         )}
       </section>
 
-      <section className="col">
+      <section className="col" data-kind="event">
         <h3>📅 Events <span className="count">{events.length}</span></h3>
         {eLoading ? (
           <SkeletonCards />
         ) : (
           events.map((e) => (
-            <article key={e.id} className="card pop">
+            <article
+              key={e.id}
+              className={`card pop ${e._live ? "fresh-card" : ""}`}
+              onClick={() => setInspect(e)}
+            >
               <b>{e.title}</b>
               <div className="meta">
                 {fmtDate(e.starts_at)}
                 {e.location ? ` · ${e.location}` : ""}
+                <Receipts ids={e.source_msg_ids} />
                 <Sources space={space} ids={e.source_msg_ids} />
               </div>
             </article>
@@ -199,18 +242,31 @@ export default function Board({ space }) {
         )}
       </section>
 
-      <section className="col">
+      <section className="col" data-kind="expense">
         <h3>💸 Expenses <span className="count">{expenses.length}</span></h3>
         {xLoading ? (
           <SkeletonCards />
         ) : (
           expenses.map((x) => (
-            <article key={x.id} className="card pop">
+            <article
+              key={x.id}
+              className={`card pop ${x._live ? "fresh-card" : ""}`}
+              onClick={() => setInspect(x)}
+            >
               <b>{money(x.amount, x.currency)}</b> — {x.description || "expense"}
               <div className="meta">
                 paid by {x.payer_name}{x.items?.length ? ` · ${x.items.length} items` : ""}
+                <Receipts ids={x.source_msg_ids} />
                 {x.receipt_file_uri && (
-                  <button className="mini" onClick={() => openReceipt(x.receipt_file_uri)}>🧾 receipt</button>
+                  <button
+                    className="mini"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      openReceipt(x.receipt_file_uri);
+                    }}
+                  >
+                    🧾 receipt
+                  </button>
                 )}
                 <Sources space={space} ids={x.source_msg_ids} />
               </div>
@@ -218,6 +274,8 @@ export default function Board({ space }) {
           ))
         )}
       </section>
+
+      <Provenance spaceId={spaceId} item={inspect} onClose={() => setInspect(null)} />
 
       {receipt && (
         <div className="modal" onClick={() => setReceipt(null)}>

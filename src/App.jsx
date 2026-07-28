@@ -164,7 +164,8 @@ export default function App() {
             </button>
           ))}
         </div>
-        <div className="user muted">{user.email}</div>
+        <span className="live-badge"><span className="live-dot" /> live</span>
+        <div className="user muted" title={user.email}>{user.email}</div>
       </header>
 
       {bindState === "binding" && <div className="banner">Claiming your space…</div>}
