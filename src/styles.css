@@ -257,3 +257,12 @@ footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line);
   .card.fresh-card, .drawer, .live-dot { animation: none; }
   .card:hover { transform: none; }
 }
+
+/* ── review fixes ─────────────────────────────────────────────────────────── */
+/* The type accent (.col[data-kind] .card = 0,3,0) outranks .card.danger (0,2,0),
+   which would repaint an overdue commitment's left edge honey. Urgency beats
+   column identity — the column is already named in its header. */
+.col .card.danger { border-color: var(--red); }
+/* Receipt modal must sit ABOVE the provenance drawer rather than tying at 50
+   and depending on DOM order. */
+.modal { z-index: 60; }
