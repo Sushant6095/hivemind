@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "../api/base44Client.js";
+import { toast } from "../lib/toast.js";
 
 // AskPanel — dashboard face of the librarian. Same total-recall answers as
 // /ask in Telegram, via the `ask` backend function.
@@ -23,8 +24,10 @@ export default function AskPanel({ spaceId }) {
     setQ("");
     try {
       const res = await base44.functions.invoke("ask", { space_id: spaceId, question });
-      setThread((t) => [...t, { role: "hive", text: res?.answer ?? "…" }]);
+      const body = res?.data ?? res; // invoke may return the raw axios response
+      setThread((t) => [...t, { role: "hive", text: body?.answer ?? "…" }]);
     } catch (e) {
+      toast("The librarian is momentarily unavailable.");
       setThread((t) => [...t, { role: "hive", text: "The librarian is momentarily unavailable — try again." }]);
     } finally {
       setBusy(false);

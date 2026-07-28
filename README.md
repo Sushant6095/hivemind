@@ -79,7 +79,7 @@ base44/
   entities/     9 JSON schemas with rls blocks
   functions/    10 functions (entry.ts + function.jsonc each)
   agents/       librarian.jsonc
-src/            React dashboard (Vite) — api client, 4 live panels, hive theme
+src/            React dashboard (Vite) — api client, 5 live panels, hive theme, installable PWA
 scripts/        bootstrap.sh · set-webhook.sh · push-to-github.sh
 SETUP.md        every command from zero to live, in order
 ```
@@ -102,7 +102,8 @@ npm i && npm run build && base44 site deploy
 
 - **Credit discipline:** extraction runs on a cheap model, ~1 call per conversation *burst* (45 s debounce + 5-min sweeper), not per message. The strong model is reserved for explicit `/ask`.
 - **RLS by denormalization:** `member_emails` is mirrored onto child records because RLS rules can't join across entities. `bind-space` owns the fan-out. Tradeoff documented, scale-appropriate.
-- **Provenance over trust:** every extraction carries `source_msg_ids` — answers come with receipts, and hallucinated "memories" are cheap to audit.
+- **Provenance over trust:** every extraction carries `source_msg_ids` — answers come with receipts, and hallucinated "memories" are cheap to audit. On the board each compiled card links **"sources ↗"** straight to the origin Telegram message (`t.me/c/…`); receipt photos open in a modal via a short-lived signed URL minted by the member-scoped `get-signed-url` function.
+- **Dashboard polish (ws-d):** per-space stats header (messages seen · records compiled · ₹ tracked), a **Digest** tab that renders the weekly narrative with an in-repo markdown renderer plus a gallery of AI-painted portraits, loading skeletons, warm per-tab empty states, error toasts on failed function calls, and an installable **PWA** (manifest + service worker) that works down to 480px.
 - **v1 ignores** edited/deleted Telegram messages (arrive as separate update types) and voice transcription — both are noted extension points, not silent gaps.
 
 ## Privacy
