@@ -1,0 +1,39 @@
+base44/functions/process-messages/entry.ts
+  s_a9a120c5d10337::t_09bd737e95ff78 328-351
+  s_a9a120c5d10337::t_8e49391889b512 41-43
+  s_a9a120c5d10337::t_07357a06552f2c 189-199
+  s_a9a120c5d10337::t_104078ac729688 217-273
+src/App.jsx
+  s_a9a120c5d10337::t_787d1d3ac5412f 23
+  s_a9a120c5d10337::t_36fd7699ac6d50 112
+  s_a9a120c5d10337::t_bdb935fb655ef0 12
+  s_a9a120c5d10337::t_c399d469cf5f47 204
+base44/functions/compile-reaper/function.jsonc
+  s_a9a120c5d10337::t_ae2d3a068db33c 1-7
+base44/entities/CompileJob.json
+  s_a9a120c5d10337::t_67ba8954e5ffd3 1-25
+base44/entities/MetricEvent.json
+  s_a9a120c5d10337::t_af5db5deeddd18 1-21
+base44/functions/compile-reaper/entry.ts
+  s_a9a120c5d10337::t_9bd1fba868e57f 1-50
+src/components/OpsPanel.jsx
+  s_a9a120c5d10337::t_2d7bc3d5ca8b48 1-107
+src/styles.css
+  s_a9a120c5d10337::t_4b5789226c84c2 269-282
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "997c42640c63867eb4628f483b2266da26e0a760",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
