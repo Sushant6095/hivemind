@@ -6,8 +6,8 @@ Hivemind is **not a chatbot**. Chatbots answer when spoken to. Hivemind is an ev
 
 ## Links
 
-- **Live dashboard** — https://REPLACE-AFTER-DEPLOY.base44.app *(placeholder — set after first deploy)*
-- **Landing page** — https://REPLACE-AFTER-DEPLOY.base44.app/landing.html
+- **Live dashboard** — https://hivemind-6aebd8e4.base44.app *(placeholder — set after first deploy)*
+- **Landing page** — https://hivemind-6aebd8e4.base44.app/landing.html
 - **Add the bot** — [@HivemindBot](https://t.me/HivemindBot) *(handle to be confirmed)*
 - **Source** — https://github.com/Sushant6095/hivemind
 

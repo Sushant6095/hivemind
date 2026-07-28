@@ -11,7 +11,7 @@ The side panel points at your **deployed** Hivemind URL, which isn't known until
 the app ships. Open `sidepanel.html` and set:
 
 ```js
-const DASHBOARD_ORIGIN = "https://REPLACE-AFTER-DEPLOY.base44.app";
+const DASHBOARD_ORIGIN = "https://hivemind-6aebd8e4.base44.app";
 ```
 
 to your real Base44 app origin (e.g. `https://hivemind-xxxx.base44.app`). Until

@@ -5,7 +5,7 @@ decisions, commitments, expenses, events and ledger you see on the dashboard,
 served as clean JSON for scripts, dashboards, and automations (Zapier, Grafana,
 a cron job, an LLM tool). It is served by the `api` backend function.
 
-> **Base URL.** Replace `https://REPLACE-AFTER-DEPLOY.base44.app` below with your
+> **Base URL.** Replace `https://hivemind-6aebd8e4.base44.app` below with your
 > deployed Base44 app origin once the app ships. The function lives at
 > `<origin>/functions/api`.
 
@@ -48,7 +48,7 @@ GET /functions/api?key=<KEY>&resource=<RESOURCE>
 ### Examples
 
 ```bash
-BASE="https://REPLACE-AFTER-DEPLOY.base44.app/functions/api"
+BASE="https://hivemind-6aebd8e4.base44.app/functions/api"
 KEY="hmk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 curl "$BASE?key=$KEY&resource=decisions"
