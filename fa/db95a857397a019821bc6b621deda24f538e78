@@ -1,0 +1,47 @@
+src/App.jsx
+  s_a9a120c5d10337::t_6658062d06f8d6 98-101
+  s_a9a120c5d10337::t_a17ae8464b04dd 14-23
+  s_a9a120c5d10337::t_a82cfb6697a86f 37
+  s_a9a120c5d10337::t_1f26d95e484561 12-13
+  s_df3610447018f4::t_847db151e9f283 77-96,142,144,156
+README.md
+  s_a9a120c5d10337::t_80cf12a57e9748 87-106
+base44/functions/ask/entry.ts
+  s_a9a120c5d10337::t_bf313f85133cfe 70-77
+base44/functions/ingest-media/entry.ts
+  s_a9a120c5d10337::t_dc71bf2711a0c8 88-95
+base44/functions/nudge-commitments/entry.ts
+  s_a9a120c5d10337::t_2d79cbf82f899a 61-65
+base44/functions/process-messages/entry.ts
+  s_a9a120c5d10337::t_6c6521699f1a16 171-181,189-195
+base44/functions/research/entry.ts
+  s_a9a120c5d10337::t_6f219b1aeb1898 63-70
+base44/functions/weekly-digest/entry.ts
+  s_a9a120c5d10337::t_ba921639f89837 107-112
+src/components/EngineRoom.jsx
+  s_a9a120c5d10337::t_a0cf7ca45f2c0e 1-147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "fadb95a857397a019821bc6b621deda24f538e78",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    },
+    "s_df3610447018f4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a7add4e47d9c29630",
+        "model": "unknown"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
