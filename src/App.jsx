@@ -133,7 +133,14 @@ export default function App() {
           <div className="row">
             <button className="tab active" onClick={() => signIn()}>Sign in with Base44</button>
             <a className="chip" href="/landing.html">Take the tour</a>
-            <a className="chip" href="/docs.html">Engineering docs</a>
+            <a
+              className="chip"
+              href="https://github.com/Sushant6095/hivemind#readme"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Engineering docs ↗
+            </a>
           </div>
         </div>
       </div>
