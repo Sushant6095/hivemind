@@ -214,6 +214,75 @@ erDiagram
 
 ---
 
+## 🐝 Built deep on Base44 — nearly the whole platform
+
+There is **no second backend**. Auth, data, realtime, compute, AI, storage, email, the agent, and hosting all run on Base44. Hivemind exercises the **CLI**, **every major SDK module**, **all six Core integrations**, and the **platform systems** end-to-end.
+
+```mermaid
+flowchart LR
+    B(("🐝 Base44"))
+    B --> CLI["⌨️ CLI"]
+    B --> SDK["📦 SDK"]
+    B --> INT["🤖 Core integrations"]
+    B --> PLAT["🏗️ Platform systems"]
+    CLI --> CLIx["login · create · entities push<br/>functions deploy · agents push<br/>secrets · site deploy · types generate"]
+    SDK --> SDKx["entities CRUD + subscribe (realtime)<br/>functions.invoke · auth<br/>asServiceRole · analytics · appLogs"]
+    INT --> INTx["InvokeLLM · GenerateImage<br/>ExtractDataFromUploadedFile<br/>UploadPrivateFile · CreateFileSignedUrl · SendEmail"]
+    PLAT --> PLATx["Entities + RLS · Realtime<br/>Deno functions · Workflows<br/>AI agent · Storage · Email · Auth · Hosting · Secrets"]
+    classDef hub fill:#F5B83D,stroke:#0b0a08,color:#0b0a08;
+    classDef grp fill:#0b0a08,stroke:#F5B83D,color:#F5B83D;
+    class B hub;
+    class CLI,SDK,INT,PLAT grp;
+```
+
+### ⌨️ Base44 CLI — the entire lifecycle is Base44
+
+| Command | What it does here |
+|---|---|
+| `base44 login` | device-code auth against the build account |
+| `base44 create -t backend-only` | register the app in-place (no scaffold clobber) |
+| `base44 entities push` | sync **11** schemas incl. RLS (full-sync) |
+| `base44 functions deploy` | ship **13** Deno functions |
+| `base44 agents push` | deploy the `librarian` agent |
+| `base44 secrets set` / `secrets list` | 4 runtime secrets, names-only readback |
+| `base44 site deploy` | host the SPA **+** `/landing.html` |
+| `base44 types generate` | emit `base44/.types/types.d.ts` typed SDK |
+
+### 📦 Base44 SDK — every module we could reach
+
+| Module / call | Where it's used |
+|---|---|
+| `createClient({appId})` / `createClientFromRequest(req)` | frontend client · every Deno function |
+| `entities.<X>.create / filter / get / update` | the whole pipeline ([`process-messages`](base44/functions/process-messages/entry.ts)) |
+| `entities.<X>.subscribe()` — **realtime** | Board · Live feed · Ledger · Digest · Import ([`src/components/`](src/components/)) |
+| `functions.invoke(name, args)` | webhook → compiler chain · frontend → backend |
+| `auth.me()` / `redirectToLogin()` | [`base44Client.js`](src/api/base44Client.js) auth gate |
+| `asServiceRole.*` | **every write** (entities are service-role-write-only) |
+| `agents` (+ `getWhatsAppConnectURL` explored) | [`librarian.jsonc`](base44/agents/librarian.jsonc) — native-channel research (ws-b) |
+| `analytics.track()` | 6 pipeline events (best-effort, try/catch) |
+| `appLogs.fetchLogs()` | Engine Room live tail |
+
+### 🤖 Base44 Core integrations — all six, load-bearing
+
+| Integration | Where it does real work |
+|---|---|
+| `InvokeLLM` · **Gemini 3 Flash** | structured extraction — the compiler ([`process-messages`](base44/functions/process-messages/entry.ts)) |
+| `InvokeLLM` · **Claude Sonnet 4.6** | librarian answers over compiled memory ([`ask`](base44/functions/ask/entry.ts)) |
+| `InvokeLLM` · `add_context_from_internet` | live-grounded debate settling ([`research`](base44/functions/research/entry.ts)) |
+| `GenerateImage` | weekly AI group portrait ([`weekly-digest`](base44/functions/weekly-digest/entry.ts)) |
+| `ExtractDataFromUploadedFile` | receipt → itemized Expense ([`ingest-media`](base44/functions/ingest-media/entry.ts)) |
+| `UploadPrivateFile` | chat media → private storage |
+| `CreateFileSignedUrl` | receipt viewer, 600 s links ([`get-signed-url`](base44/functions/get-signed-url/entry.ts)) |
+| `SendEmail` | weekly digest to every member |
+
+### 🏗️ Platform systems
+
+**Entities** (hosted document store, Mongo-style queries) · **RLS** (row + field-level, `{{user.email}}` templating) · **Realtime** (WebSocket subscriptions) · **Deno functions** (`Deno.serve`, service role) · **Workflows runtime** (migrated from legacy automations — see below) · **Managed AI agent** (least-privilege entity tools + function tool) · **Private storage + signed URLs** · **Transactional email** · **Auth** (device-code CLI + web + membership) · **Static hosting** (SPA + landing) · **Secrets** · **Typed-SDK generation**.
+
+> **In short:** if Base44 exposes it, Hivemind almost certainly uses it — two LLM tiers, image gen, document AI, private storage, email, realtime, a managed agent, RLS, and a typed SDK, all deployed and hosted through the Base44 CLI.
+
+---
+
 ## 📈 Instrumented + observable
 
 Every pipeline completion emits a best-effort **analytics event** (`analytics.track`, each wrapped in try/catch so telemetry can *never* break the pipeline):
