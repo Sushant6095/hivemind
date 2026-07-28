@@ -1,0 +1,17 @@
+{
+  "name": "Lease",
+  "type": "object",
+  "properties": {
+    "key": { "type": "string", "description": "Resource being leased, e.g. compile:<space_id>" },
+    "token": { "type": "string" },
+    "acquired_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time", "description": "TTL — a crashed holder can never deadlock the resource" }
+  },
+  "required": ["key", "expires_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

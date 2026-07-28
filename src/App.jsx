@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { base44, requireUser } from "./api/base44Client.js";
+import { base44, getUser, signIn } from "./api/base44Client.js";
 import Board from "./components/Board.jsx";
 import LiveFeed from "./components/LiveFeed.jsx";
 import Ledger from "./components/Ledger.jsx";
@@ -9,6 +9,7 @@ import Digest from "./components/Digest.jsx";
 import StatsHeader from "./components/StatsHeader.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 import ApiKeysPanel from "./components/ApiKeysPanel.jsx";
+import OpsPanel from "./components/OpsPanel.jsx";
 import EngineRoom from "./components/EngineRoom.jsx";
 
 const TAB_LABELS = {
@@ -19,6 +20,7 @@ const TAB_LABELS = {
   ask: "Ask the librarian",
   import: "Import",
   api: "API",
+  ops: "Ops",
   engine: "Engine Room",
 };
 
@@ -35,14 +37,25 @@ export default function App() {
   const [bindState, setBindState] = useState(null); // null | "binding" | "done" | "error"
   const [tab, setTab] = useState(panelMode ? "feed" : "board");
   const [isOwner, setIsOwner] = useState(false); // gates the owner-only Engine Room tab
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     if (panelMode) document.body.classList.add("panel-mode");
   }, []);
 
   // --- auth gate ----------------------------------------------------------
+  // Resolve, never redirect: an automatic bounce to a login wall would be the
+  // worst possible first frame (and, with a relative /login, an infinite loop).
   useEffect(() => {
-    requireUser().then(setUser);
+    let cancelled = false;
+    getUser().then((u) => {
+      if (cancelled) return;
+      setUser(u);
+      setAuthChecked(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // --- ?bind=CODE claim flow ---------------------------------------------
@@ -96,11 +109,45 @@ export default function App() {
 
   const space = useMemo(() => spaces.find((s) => s.id === spaceId), [spaces, spaceId]);
   const tabs = useMemo(
-    () => ["board", "feed", "ledger", "digest", "ask", "import", "api", ...(isOwner ? ["engine"] : [])],
+    () => ["board", "feed", "ledger", "digest", "ask", "import", "api", "ops", ...(isOwner ? ["engine"] : [])],
     [isOwner],
   );
 
-  if (!user) return <div className="center muted">Signing you in…</div>;
+  if (!authChecked) return <div className="center muted">Loading…</div>;
+
+  if (!user) {
+    const code = new URLSearchParams(window.location.search).get("bind");
+    return (
+      <div className="center">
+        <div className="empty">
+          <h2><span className="logo">🐝</span> Hivemind</h2>
+          <p className="tag">your group chat, compiled</p>
+          <p>
+            Add one bot to a Telegram group and the conversation compiles itself
+            into a live database — decisions, commitments, questions, events and
+            expenses, each one traced back to the message it came from.
+          </p>
+          <p>
+            {code
+              ? "Sign in to claim your space and open the dashboard."
+              : "Sign in to open your dashboard, or take the tour first."}
+          </p>
+          <div className="row">
+            <button className="tab active" onClick={() => signIn()}>Sign in with Base44</button>
+            <a className="chip" href="/landing.html">Take the tour</a>
+            <a
+              className="chip"
+              href="https://github.com/Sushant6095/hivemind#readme"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Engineering docs ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -119,7 +166,8 @@ export default function App() {
             </button>
           ))}
         </div>
-        <div className="user muted">{user.email}</div>
+        <span className="live-badge"><span className="live-dot" /> live</span>
+        <div className="user muted" title={user.email}>{user.email}</div>
       </header>
 
       {bindState === "binding" && <div className="banner">Claiming your space…</div>}
@@ -130,7 +178,7 @@ export default function App() {
           <div className="empty">
             <h2>No spaces yet</h2>
             <p>
-              Add <b>@HivemindBot</b> to any Telegram group, then open the claim link it posts. The group starts
+              Add <b>@base44hive_bot</b> to any Telegram group, then open the claim link it posts. The group starts
               compiling instantly — decisions, commitments, questions, events, expenses.
             </p>
           </div>
@@ -153,6 +201,7 @@ export default function App() {
             {tab === "ask" && <AskPanel spaceId={space.id} />}
             {tab === "import" && <ImportPanel spaceId={space.id} />}
             {tab === "api" && <ApiKeysPanel spaceId={space.id} />}
+            {tab === "ops" && <OpsPanel spaceId={space.id} />}
             {tab === "engine" && isOwner && <EngineRoom space={space} />}
           </main>
         </>

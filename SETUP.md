@@ -31,8 +31,8 @@ base44 create                      # create the backend project — SAVE THE APP
 ## 3. Push the backend
 
 ```bash
-base44 entities push               # 9 schemas incl. RLS
-base44 functions deploy            # all 10 functions + automations
+base44 entities push               # 11 schemas incl. RLS
+base44 functions deploy            # all 13 functions
 base44 agents push                 # librarian
 base44 types generate              # optional: typed SDK for the frontend
 ```

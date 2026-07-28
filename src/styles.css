@@ -211,3 +211,72 @@ footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line);
   .feed, .ledger, .ask, .digest { max-width: 100%; }
   .bubble { max-width: 92%; }
 }
+
+/* Anonymous (signed-out) screen — pitch + three doors, no auto-redirect. */
+.empty .tag { margin-bottom: 14px; }
+.row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+.row a.chip { text-decoration: none; display: inline-flex; align-items: center; }
+
+/* ── provenance drawer — the receipts behind every compiled row ───────────── */
+.drawer-scrim { position: fixed; inset: 0; background: rgba(8, 9, 12, 0.6); backdrop-filter: blur(2px); display: flex; justify-content: flex-end; z-index: 50; }
+.drawer { width: min(420px, 92vw); height: 100%; background: var(--panel); border-left: 1px solid var(--line); padding: 20px; overflow-y: auto; animation: slide 0.25s ease; }
+@keyframes slide { from { transform: translateX(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+.drawer-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
+.drawer-head h3 { font-size: 15px; }
+.src-msg { border-left: 2px solid var(--honey-dim); padding: 8px 12px; margin-bottom: 10px; background: var(--card); border-radius: 0 10px 10px 0; }
+.src-msg p { font-size: 13px; margin: 2px 0; color: var(--text); }
+.src-msg span { font-size: 11px; }
+.receipts { margin-left: 2px; }
+.card { cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease; }
+.card:hover { border-color: var(--honey-dim); transform: translateY(-1px); }
+/* skeletons are placeholders, not rows — don't invite a click */
+.card.skeleton { cursor: default; }
+.card.skeleton:hover { border-color: var(--line); transform: none; }
+
+/* ── fresh-arrival glow: a card that compiled while you were watching ─────── */
+@keyframes glow { 0% { box-shadow: 0 0 0 2px var(--honey); border-color: var(--honey); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.card.fresh-card { animation: pop 0.35s ease, glow 2.4s ease 0.15s; }
+
+/* ── per-type column accents: five columns must parse in one glance ───────── */
+.col[data-kind="decision"] .card { border-left: 3px solid var(--green); }
+.col[data-kind="commitment"] .card { border-left: 3px solid var(--honey); }
+.col[data-kind="question"] .card { border-left: 3px solid #6ea8ff; }
+.col[data-kind="event"] .card { border-left: 3px solid #b78cff; }
+.col[data-kind="expense"] .card { border-left: 3px solid var(--red); }
+
+/* ── always-visible live indicator (every tab, every screenshot) ──────────── */
+.live-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: breathe 1.6s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+/* ── keyboard focus states ───────────────────────────────────────────────── */
+.chip:focus-visible, .tab:focus-visible, .mini:focus-visible, .card:focus-visible { outline: 2px solid var(--honey-dim); outline-offset: 2px; }
+
+/* respect reduced-motion: keep the information, drop the movement */
+@media (prefers-reduced-motion: reduce) {
+  .card.fresh-card, .drawer, .live-dot { animation: none; }
+  .card:hover { transform: none; }
+}
+
+/* ── review fixes ─────────────────────────────────────────────────────────── */
+/* The type accent (.col[data-kind] .card = 0,3,0) outranks .card.danger (0,2,0),
+   which would repaint an overdue commitment's left edge honey. Urgency beats
+   column identity — the column is already named in its header. */
+.col .card.danger { border-color: var(--red); }
+/* Receipt modal must sit ABOVE the provenance drawer rather than tying at 50
+   and depending on DOM order. */
+.modal { z-index: 60; }
+
+/* ── Ops tab: latency percentiles, success rate, job state machine ────────── */
+.ops { max-width: 760px; }
+.ops-h { font-size: 14px; color: var(--muted); margin: 18px 0 10px; }
+.ops-job { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; cursor: default; }
+.ops-job:hover { border-color: var(--line); transform: none; }
+.ops-when { margin-left: auto; }
+.ops-err { width: 100%; color: var(--red); font-size: 12px; margin-top: 6px; word-break: break-word; }
+.ops-note { font-size: 12px; margin-top: 16px; line-height: 1.6; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-done { color: var(--green); border-color: var(--green); }
+.badge-running { color: var(--honey); border-color: var(--honey); }
+.badge-retrying { color: var(--honey-dim); border-color: var(--honey-dim); }
+.badge-dead { color: var(--red); border-color: var(--red); }

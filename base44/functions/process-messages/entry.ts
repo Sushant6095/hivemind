@@ -20,6 +20,91 @@ const DEBOUNCE_SECONDS = 45;
 const FORCE_BATCH_SIZE = 10;
 const CONTEXT_WINDOW = 15;
 
+// ── distributed lease ───────────────────────────────────────────────────
+// telegram-webhook invokes this function once per message, so a 12-line burst
+// spawns 12 concurrent passes. Without mutual exclusion, the pass that starts
+// at message #10 is still inside its 2-5s LLM call when #11 and #12 read the
+// same still-unprocessed rows and start their own passes — producing duplicate
+// decision/commitment/expense cards and tripling LLM spend on every burst.
+//
+// Base44 entities carry no unique index, so "filter then create" is a
+// check-then-act race. We use the sequential-node pattern (ZooKeeper-style):
+// every contender creates its own row, then re-reads all live rows for the key
+// in creation order. The oldest row wins; every other contender deletes its own
+// row and backs off. Leases carry a TTL, so a holder that crashes mid-LLM-call
+// cannot deadlock the space — the lease simply expires.
+//
+// Caveat: if two rows land in the same millisecond the creation order may be
+// arbitrary, but it is consistent across all readers, which is all that mutual
+// exclusion requires.
+const LEASE_TTL_MS = 150_000; // > worst-case LLM round trip
+const DAILY_LLM_CAP = 200; // per space, per UTC day
+const RETRY_BASE_MS = 30_000; // 30s → 60s → 120s → 240s → dead-letter
+const MAX_ATTEMPTS = 5;
+
+async function acquireLease(sr: any, key: string) {
+  const now = Date.now();
+  const live = (rows: any[]) => rows.filter((l) => new Date(l.expires_at).getTime() > now);
+
+  const before = await sr.entities.Lease.filter({ key }, "created_date", 20);
+  if (live(before).length > 0) return null; // held by someone else
+
+  for (const stale of before) {
+    // GC expired holders
+    await sr.entities.Lease.delete(stale.id).catch(() => {});
+  }
+
+  const mine = await sr.entities.Lease.create({
+    key,
+    token: crypto.randomUUID(),
+    acquired_at: new Date(now).toISOString(),
+    expires_at: new Date(now + LEASE_TTL_MS).toISOString(),
+  });
+
+  // resolve the race: re-read; oldest live row is the winner
+  const after = live(await sr.entities.Lease.filter({ key }, "created_date", 20));
+  if (after.length > 1 && after[0].id !== mine.id) {
+    await sr.entities.Lease.delete(mine.id).catch(() => {});
+    return null;
+  }
+  return mine;
+}
+
+async function releaseLease(sr: any, lease: any) {
+  if (lease?.id) await sr.entities.Lease.delete(lease.id).catch(() => {});
+}
+
+// ── BM25 lexical retrieval ──────────────────────────────────────────────
+// Okapi BM25, implemented in place: no embedding round-trip, no vector store,
+// deterministic and sub-millisecond at group scale. Here it decides which OPEN
+// QUESTION a burst actually answered, instead of "whichever is newest".
+const STOP = new Set(
+  "a an the is are was were be been to of in on for and or we i you it that this at by with about our us".split(" "),
+);
+const tok = (s: string) =>
+  ((s ?? "").toLowerCase().match(/[a-z0-9']+/g) ?? []).filter((t) => t.length > 1 && !STOP.has(t));
+
+function bm25(query: string, docs: { id: string; text: string; meta?: any }[], k = 8) {
+  const q = [...new Set(tok(query))];
+  if (!q.length || !docs.length) return [];
+  const D = docs.map((d) => ({ ...d, terms: tok(d.text) }));
+  const avgdl = D.reduce((s, d) => s + d.terms.length, 0) / D.length || 1;
+  const df: Record<string, number> = {};
+  for (const d of D) for (const t of new Set(d.terms)) df[t] = (df[t] ?? 0) + 1;
+  const K1 = 1.5, B = 0.75;
+  return D.map((d) => {
+    const tf: Record<string, number> = {};
+    for (const t of d.terms) tf[t] = (tf[t] ?? 0) + 1;
+    let score = 0;
+    for (const t of q) {
+      if (!tf[t]) continue;
+      const idf = Math.log(1 + (D.length - (df[t] ?? 0) + 0.5) / ((df[t] ?? 0) + 0.5));
+      score += idf * (tf[t] * (K1 + 1)) / (tf[t] + K1 * (1 - B + B * (d.terms.length / avgdl)));
+    }
+    return { id: d.id, text: d.text, meta: d.meta, score };
+  }).filter((r) => r.score > 0).sort((a, b) => b.score - a.score).slice(0, k);
+}
+
 const EXTRACTION_SCHEMA = {
   type: "object",
   properties: {
@@ -76,6 +161,20 @@ async function compileSpace(sr: any, spaceId: string, force: boolean) {
     return { skipped: "debounce", backlog: unprocessed.length };
   }
 
+  // --- mutual exclusion ---------------------------------------------------
+  // The debounce check above is deliberately OUTSIDE the lease: it is cheap and
+  // uncontended. Everything from here on mutates shared state.
+  const lease = await acquireLease(sr, `compile:${spaceId}`);
+  if (!lease) return { skipped: "locked" }; // another pass owns this burst
+  try {
+    return await compileLocked(sr, spaceId, unprocessed);
+  } finally {
+    await releaseLease(sr, lease);
+  }
+}
+
+// The critical section: only ever entered by one pass per space at a time.
+async function compileLocked(sr: any, spaceId: string, unprocessed: any[]) {
   // --- context ------------------------------------------------------------
   const context = await sr.entities.RawMessage.filter(
     { space_id: spaceId, processed: true },
@@ -86,6 +185,17 @@ async function compileSpace(sr: any, spaceId: string, force: boolean) {
   const activeDecisions = await sr.entities.Decision.filter({ space_id: spaceId, status: "active" }, "-created_date", 10);
   const spaceRec = await sr.entities.Space.get(spaceId).catch(() => null);
   const memberEmails: string[] = spaceRec?.member_emails ?? [];
+
+  // --- per-space daily spend cap ------------------------------------------
+  // Reuses Space.stats — no new entity. A runaway loop or an abusive group
+  // cannot silently burn the whole LLM budget.
+  const today = new Date().toISOString().slice(0, 10);
+  const stats = spaceRec?.stats ?? {};
+  const calls = stats.llm_day === today ? (stats.llm_calls ?? 0) : 0;
+  if (calls >= DAILY_LLM_CAP) return { skipped: "daily_cap", calls };
+  await sr.entities.Space.update(spaceId, {
+    stats: { ...stats, llm_day: today, llm_calls: calls + 1 },
+  });
 
   const fmt = (m: any) => `[id:${m.tg_message_id}] ${m.sent_at} ${m.sender_name}: ${m.text}`;
   const prompt = [
@@ -104,6 +214,63 @@ async function compileSpace(sr: any, spaceId: string, force: boolean) {
     ...unprocessed.map(fmt),
   ].join("\n");
 
+  // --- durable job record --------------------------------------------------
+  // Before this existed, a thrown InvokeLLM left the batch processed:false
+  // forever with no record that anything failed and no bounded retry. Every
+  // batch now ends in `done` or `dead` — never silently dropped.
+  const t0 = Date.now();
+  const job = await sr.entities.CompileJob.create({
+    space_id: spaceId,
+    state: "running",
+    attempts: 1,
+    max_attempts: MAX_ATTEMPTS,
+    batch_size: unprocessed.length,
+    started_at: new Date(t0).toISOString(),
+    member_emails: memberEmails,
+  }).catch(() => null);
+
+  try {
+    return await runExtraction(sr, spaceId, unprocessed, prompt, memberEmails, job, t0);
+  } catch (err) {
+    // Exponential backoff: 30s, 60s, 120s, 240s, then dead-letter. Messages
+    // stay processed:false — the reaper owns the retry, not this invocation.
+    const attempts = job?.attempts ?? 1;
+    const delay = RETRY_BASE_MS * Math.pow(2, attempts - 1);
+    if (job?.id) {
+      await sr.entities.CompileJob.update(job.id, {
+        state: attempts >= MAX_ATTEMPTS ? "dead" : "retrying",
+        attempts,
+        last_error: String(err).slice(0, 500),
+        next_attempt_at: new Date(Date.now() + delay).toISOString(),
+        duration_ms: Date.now() - t0,
+        finished_at: new Date().toISOString(),
+      }).catch(() => {});
+    }
+    await sr.entities.MetricEvent.create({
+      space_id: spaceId,
+      kind: "compile",
+      ok: false,
+      duration_ms: Date.now() - t0,
+      model: "gemini_3_flash",
+      input_chars: prompt.length,
+      meta: { batch: unprocessed.length, error: String(err).slice(0, 200) },
+      member_emails: memberEmails,
+    }).catch(() => {});
+    return { failed: true, job: job?.id ?? null };
+  }
+}
+
+// The extraction itself. Split out so the job/metric bookkeeping above reads as
+// one unit and every throw lands in exactly one catch.
+async function runExtraction(
+  sr: any,
+  spaceId: string,
+  unprocessed: any[],
+  prompt: string,
+  memberEmails: string[],
+  job: any,
+  t0: number,
+) {
   const result: any = await sr.integrations.Core.InvokeLLM({
     prompt,
     model: "gemini_3_flash", // cheap + fast; the librarian uses a bigger model
@@ -131,13 +298,16 @@ async function compileSpace(sr: any, spaceId: string, force: boolean) {
       await sr.entities.Commitment.create({ ...common(e), who_name: e.who_name || "Someone", what: e.title, due_at: e.due_at || undefined, status: "open" });
     } else if (e.kind === "question") {
       if (e.answers_question && e.answer) {
-        const [q] = await sr.entities.Question.filter({ space_id: spaceId, status: "open" }, "-created_date", 25);
-        // naive match: newest open question containing a keyword overlap is answered
-        const target = q && e.answers_question ? q : null;
-        if (target) {
-          await sr.entities.Question.update(target.id, { status: "answered", answer: e.answer, answered_via: "human" });
+        const open = await sr.entities.Question.filter({ space_id: spaceId, status: "open" }, "-created_date", 25);
+        // Score the model's restatement against EVERY open question and take the
+        // best match above a floor — never "whichever question happens to be
+        // newest", which flipped an unrelated card and left the real one open.
+        const [hit] = bm25(e.answers_question, open.map((q: any) => ({ id: q.id, text: q.text })), 1);
+        if (hit && hit.score >= 0.8) {
+          await sr.entities.Question.update(hit.id, { status: "answered", answer: e.answer, answered_via: "human" });
           continue;
         }
+        // no confident match → fall through and record it as a new question
       }
       await sr.entities.Question.create({ ...common(e), text: e.title, asked_by: e.who_name || "", status: "open" });
     } else if (e.kind === "event") {
@@ -147,12 +317,38 @@ async function compileSpace(sr: any, spaceId: string, force: boolean) {
     }
   }
 
-  // mark burst compiled
-  for (const m of unprocessed) {
-    await sr.entities.RawMessage.update(m.id, { processed: true });
+  // mark burst compiled — batched: 50 sequential round trips was the slowest
+  // part of the critical section, and it holds the lease the whole time.
+  for (let i = 0; i < unprocessed.length; i += 10) {
+    await Promise.all(
+      unprocessed.slice(i, i + 10).map((m: any) => sr.entities.RawMessage.update(m.id, { processed: true })),
+    );
   }
 
-  return { compiled: unprocessed.length, extracted: extractions.filter((e) => e.kind !== "none").length };
+  const written = extractions.filter((e) => e && e.kind !== "none" && (e.confidence ?? 0) >= 0.5).length;
+
+  if (job?.id) {
+    await sr.entities.CompileJob.update(job.id, {
+      state: "done",
+      extracted: written,
+      duration_ms: Date.now() - t0,
+      finished_at: new Date().toISOString(),
+    }).catch(() => {});
+  }
+
+  // Fire-and-forget metric — observability must never break the pipeline.
+  await sr.entities.MetricEvent.create({
+    space_id: spaceId,
+    kind: "compile",
+    ok: true,
+    duration_ms: Date.now() - t0,
+    model: "gemini_3_flash",
+    input_chars: prompt.length,
+    meta: { batch: unprocessed.length, extracted: written },
+    member_emails: memberEmails,
+  }).catch(() => {});
+
+  return { compiled: unprocessed.length, extracted: written };
 }
 
 Deno.serve(async (req: Request) => {
