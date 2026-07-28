@@ -115,17 +115,38 @@ Deno.serve(async (req: Request) => {
     const arg = rest.join(" ").trim();
     const bare = cmd.split("@")[0]; // "/ask@base44hive_bot" → "/ask"
 
+    // functions.invoke() THROWS on any non-2xx. A bare `/ask` makes the ask
+    // function return 400, which used to crash this handler *after* the usage
+    // hint had already been sent — so Telegram saw a 5xx, retried, and the hint
+    // was sent again and again. Commands never create a RawMessage, so the
+    // update_id dedup cannot absorb those retries. Never let a downstream
+    // status code escape: always ack the update.
+    // Every self-invoke presents the app's shared secret. The downstream
+    // functions have no user session to check on the Telegram path, so this is
+    // how they tell "the webhook called me" from "a stranger called me with a
+    // space_id they guessed".
+    const call = (fn: string, args: Record<string, unknown>) =>
+      base44.functions.invoke(fn, { ...args, internal_key: secret }).catch(async (err: any) => {
+        const code = err?.response?.status;
+        if (code !== 400) {
+          await tgSend(chatId, "🐝 That didn't go through — try again in a moment.", msg.message_id);
+        }
+      });
+
     if (bare === "/start" || bare === "/help") {
       await tgSend(chatId, "🐝 I silently compile this chat into a live database. Try /ask, /research, /done, /digest.");
     } else if (bare === "/ask") {
-      // Answer from the group's compiled memory (librarian) — async self-invoke.
-      await base44.functions.invoke("ask", { space_id: space.id, question: arg, chat_id: chatId, reply_to: msg.message_id });
+      // Guard the empty case here so we never pay a round trip just to 400.
+      if (!arg) await tgSend(chatId, "Usage: /ask what did we decide about …?", msg.message_id);
+      else await call("ask", { space_id: space.id, question: arg, chat_id: chatId, reply_to: msg.message_id });
     } else if (bare === "/research") {
-      await base44.functions.invoke("research", { space_id: space.id, query: arg, chat_id: chatId, reply_to: msg.message_id });
+      if (!arg) await tgSend(chatId, "Usage: /research is August rainy in Goa?", msg.message_id);
+      else await call("research", { space_id: space.id, query: arg, chat_id: chatId, reply_to: msg.message_id });
     } else if (bare === "/done") {
-      await base44.functions.invoke("mark-done", { space_id: space.id, needle: arg, chat_id: chatId, by_name: senderName });
+      if (!arg) await tgSend(chatId, "Usage: /done flights   (a word from the commitment)", msg.message_id);
+      else await call("mark-done", { space_id: space.id, needle: arg, chat_id: chatId, by_name: senderName });
     } else if (bare === "/digest") {
-      await base44.functions.invoke("weekly-digest", { space_id: space.id, on_demand: true });
+      await call("weekly-digest", { space_id: space.id, on_demand: true });
       await tgSend(chatId, "📬 Compiling your digest — it will arrive here and by email.");
     }
     return Response.json({ ok: true });

@@ -9,6 +9,28 @@ import { createClientFromRequest } from "npm:@base44/sdk";
 
 const TG_API = "https://api.telegram.org/bot";
 
+// ── caller authorisation ────────────────────────────────────────────────
+// This function spends LLM credits with internet grounding on every call, so
+// it cannot be open. telegram-webhook proves itself with the app's shared
+// secret; the dashboard proves itself with a session + Membership row.
+function safeEqual(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return out === 0;
+}
+
+async function authorize(base44: any, sr: any, space_id: string, internal_key?: string) {
+  const shared = Deno.env.get("TG_WEBHOOK_SECRET") ?? "";
+  if (internal_key && shared && safeEqual(shared, internal_key)) return null;
+  const user = await base44.auth.me().catch(() => null);
+  if (!user?.email) return Response.json({ error: "auth required" }, { status: 401 });
+  const member = await sr.entities.Membership.filter({ space_id, user_email: user.email }, undefined, 1);
+  if (member.length === 0) return Response.json({ error: "not a member of this space" }, { status: 403 });
+  return null;
+}
+
+
 const RESEARCH_SCHEMA = {
   type: "object",
   properties: {
@@ -22,9 +44,12 @@ Deno.serve(async (req: Request) => {
   const base44 = createClientFromRequest(req);
   const sr = base44.asServiceRole;
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
-  const { space_id, query, chat_id, reply_to } = await req.json().catch(() => ({}));
+  const { space_id, query, chat_id, reply_to, internal_key } = await req.json().catch(() => ({}));
 
   if (!space_id || !query?.trim()) return Response.json({ error: "space_id and query required" }, { status: 400 });
+
+  const denied = await authorize(base44, sr, space_id, internal_key);
+  if (denied) return denied;
 
   const result: any = await sr.integrations.Core.InvokeLLM({
     prompt:

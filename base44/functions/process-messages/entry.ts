@@ -1,23 +1,35 @@
 // process-messages — the compiler pass.
 //
-// Fires as an ENTITY AUTOMATION whenever a RawMessage is created, but works on
-// debounced BURSTS to keep LLM credit usage ~1 call per conversation burst
-// instead of 1 call per message:
+// Invoked fire-and-forget by telegram-webhook on every inbound message, and on
+// a schedule as a WORKFLOW with {"sweep": true} as a safety net. (Legacy
+// `automations` blocks are rejected by this app's Workflows runtime with a 409,
+// so the schedule has to live as a Workflow.)
 //
-//   • If the newest unprocessed message is younger than DEBOUNCE_SECONDS and
-//     the backlog is small, we skip — a later automation firing (or the next
-//     message) will pick the burst up once it has settled.
-//   • Otherwise: ONE InvokeLLM call (cheap model, strict JSON schema) over the
+// It works on debounced BURSTS to keep LLM usage at ~1 call per conversation
+// burst instead of 1 call per message:
+//
+//   • A burst of FORCE_BATCH_SIZE or more compiles immediately.
+//   • A smaller burst is WAITED OUT in-process for the remainder of
+//     DEBOUNCE_SECONDS and then re-read — we do NOT return and hope a sweeper
+//     comes back for us. Returning was the old behaviour and it had a nasty
+//     failure mode: someone types two messages, every invocation answers
+//     {skipped:"debounce"}, and the product looks dead until the next sweep.
+//     Racing waiters are safe — the lease admits exactly one compiler per
+//     space and the losers re-read an empty backlog and no-op.
+//   • Then: ONE InvokeLLM call (cheap model, strict JSON schema) over the
 //     unprocessed batch + a context window of already-processed messages.
 //
 // Extractions are upserted into Decision / Commitment / Question / Event /
 // Expense with provenance (source_msg_ids), and near-duplicate decisions are
-// superseded rather than duplicated.
+// superseded rather than duplicated. Every pass is recorded as a CompileJob so
+// a crash is recoverable (see compile-reaper) and as a MetricEvent so the
+// Engine Room can show real latency and extraction counts.
 
 import { createClientFromRequest } from "npm:@base44/sdk";
 
-const DEBOUNCE_SECONDS = 45;
-const FORCE_BATCH_SIZE = 10;
+const DEBOUNCE_SECONDS = 15;
+const FORCE_BATCH_SIZE = 3;
+const MAX_SETTLE_MS = 20_000; // hard ceiling on the in-process settle wait
 const CONTEXT_WINDOW = 15;
 
 // ── distributed lease ───────────────────────────────────────────────────
@@ -146,19 +158,50 @@ Rules:
 - If messages answer an earlier open question (listed under OPEN QUESTIONS), emit kind:"question" with answers_question + answer filled.
 - If a new agreement replaces an earlier decision (listed under ACTIVE DECISIONS), fill supersedes.`;
 
-async function compileSpace(sr: any, spaceId: string, force: boolean) {
-  const unprocessed = await sr.entities.RawMessage.filter(
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Cheap read-only probe. Used to avoid parking a sleeper behind a compile that
+// is already in flight — without it, a long LLM call would collect one waiting
+// invocation per inbound message.
+async function leaseHeld(sr: any, key: string) {
+  const now = Date.now();
+  const rows = await sr.entities.Lease.filter({ key }, "created_date", 20).catch(() => []);
+  return rows.some((l: any) => new Date(l.expires_at).getTime() > now);
+}
+
+// How much longer this burst needs before it is worth an LLM call.
+// 0 means "compile now". Clamped, because sent_at comes from the sender's
+// clock via Telegram and cannot be trusted to be sane.
+function settleMs(rows: any[]) {
+  if (rows.length >= FORCE_BATCH_SIZE) return 0;
+  const newest = new Date(rows[rows.length - 1].sent_at).getTime();
+  if (!Number.isFinite(newest)) return 0;
+  const ageS = (Date.now() - newest) / 1000;
+  if (ageS >= DEBOUNCE_SECONDS) return 0;
+  return Math.min(Math.round((DEBOUNCE_SECONDS - ageS) * 1000), MAX_SETTLE_MS);
+}
+
+async function readBacklog(sr: any, spaceId: string) {
+  return await sr.entities.RawMessage.filter(
     { space_id: spaceId, processed: false, media_type: "none" },
     "sent_at",
     50,
   );
+}
+
+async function compileSpace(sr: any, spaceId: string, force: boolean) {
+  let unprocessed = await readBacklog(sr, spaceId);
   if (unprocessed.length === 0) return { skipped: "empty" };
 
-  // --- debounce: let bursts settle ---------------------------------------
-  const newest = new Date(unprocessed[unprocessed.length - 1].sent_at).getTime();
-  const age = (Date.now() - newest) / 1000;
-  if (age < DEBOUNCE_SECONDS && unprocessed.length < FORCE_BATCH_SIZE && !force) {
-    return { skipped: "debounce", backlog: unprocessed.length };
+  // --- debounce: wait the burst out, don't bail on it ---------------------
+  if (!force) {
+    const waitMs = settleMs(unprocessed);
+    if (waitMs > 0) {
+      if (await leaseHeld(sr, `compile:${spaceId}`)) return { skipped: "locked" };
+      await sleep(waitMs);
+      unprocessed = await readBacklog(sr, spaceId);
+      if (unprocessed.length === 0) return { skipped: "empty" }; // another pass took it
+    }
   }
 
   // --- mutual exclusion ---------------------------------------------------
