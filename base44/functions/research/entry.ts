@@ -60,5 +60,13 @@ Deno.serve(async (req: Request) => {
     }).catch(() => {});
   }
 
+  // analytics: best-effort, never breaks the research path
+  try {
+    (base44 as any).analytics?.track({
+      eventName: "research_run",
+      properties: { space_id, sources: (result?.sources ?? []).length },
+    });
+  } catch (_) { /* fire-and-forget */ }
+
   return Response.json({ ok: true, ...result });
 });

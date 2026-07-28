@@ -85,6 +85,14 @@ Deno.serve(async (req: Request) => {
           text: `🧾 Logged ${extracted.currency || "INR"} ${extracted.total_amount}${extracted.merchant ? ` at ${extracted.merchant}` : ""} — split ${names.length} ways on the board.`,
         }),
       }).catch(() => {});
+
+      // analytics: best-effort, never breaks media ingestion
+      try {
+        (base44 as any).analytics?.track({
+          eventName: "receipt_parsed",
+          properties: { space_id: raw.space_id, amount: extracted.total_amount, currency: extracted.currency || "INR" },
+        });
+      } catch (_) { /* fire-and-forget */ }
     }
     await sr.entities.RawMessage.update(raw.id, { processed: true });
   }

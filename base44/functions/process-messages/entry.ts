@@ -168,7 +168,17 @@ Deno.serve(async (req: Request) => {
     const pending = await sr.entities.RawMessage.filter({ processed: false }, "sent_at", 200);
     const spaceIds = [...new Set(pending.map((m: any) => m.space_id))] as string[];
     const results: Record<string, unknown> = {};
-    for (const id of spaceIds) results[id] = await compileSpace(sr, id, false);
+    for (const id of spaceIds) {
+      const r = await compileSpace(sr, id, false);
+      results[id] = r;
+      // analytics: best-effort, must never break the compiler pipeline
+      try {
+        (base44 as any).analytics?.track({
+          eventName: "compile_burst",
+          properties: { extracted: (r as any).extracted ?? 0, skipped: (r as any).skipped ?? "" },
+        });
+      } catch (_) { /* fire-and-forget */ }
+    }
     return Response.json({ ok: true, swept: spaceIds.length, results });
   }
 
@@ -176,5 +186,12 @@ Deno.serve(async (req: Request) => {
   if (!spaceId) return Response.json({ ok: true, skipped: "no space_id" });
 
   const result = await compileSpace(sr, spaceId, Boolean(payload?.force));
+  // analytics: best-effort, must never break the compiler pipeline
+  try {
+    (base44 as any).analytics?.track({
+      eventName: "compile_burst",
+      properties: { extracted: (result as any).extracted ?? 0, skipped: (result as any).skipped ?? "" },
+    });
+  } catch (_) { /* fire-and-forget */ }
   return Response.json({ ok: true, ...result });
 });

@@ -4,6 +4,9 @@ import Board from "./components/Board.jsx";
 import LiveFeed from "./components/LiveFeed.jsx";
 import Ledger from "./components/Ledger.jsx";
 import AskPanel from "./components/AskPanel.jsx";
+import EngineRoom from "./components/EngineRoom.jsx";
+
+const TAB_LABELS = { board: "Board", feed: "Live feed", ledger: "Ledger", ask: "Ask the librarian", engine: "Engine Room" };
 
 // Hivemind dashboard — one screen, deliberately thin: its whole job is to make
 // the backend visible. Every panel is fed by entity realtime subscriptions.
@@ -14,6 +17,7 @@ export default function App() {
   const [spaceId, setSpaceId] = useState(null);
   const [bindState, setBindState] = useState(null); // null | "binding" | "done" | "error"
   const [tab, setTab] = useState("board");
+  const [isOwner, setIsOwner] = useState(false); // gates the owner-only Engine Room tab
 
   // --- auth gate ----------------------------------------------------------
   useEffect(() => {
@@ -49,7 +53,28 @@ export default function App() {
     };
   }, [user, bindState]);
 
+  // --- owner check drives the Engine Room tab (Membership.role === "owner") --
+  useEffect(() => {
+    if (!user || !spaceId) {
+      setIsOwner(false);
+      return;
+    }
+    let cancelled = false;
+    base44.entities.Membership.filter({ space_id: spaceId, user_email: user.email }, undefined, 1)
+      .then((rows) => {
+        if (cancelled) return;
+        const owner = rows?.[0]?.role === "owner";
+        setIsOwner(owner);
+        if (!owner) setTab((t) => (t === "engine" ? "board" : t));
+      })
+      .catch(() => !cancelled && setIsOwner(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [user, spaceId]);
+
   const space = useMemo(() => spaces.find((s) => s.id === spaceId), [spaces, spaceId]);
+  const tabs = useMemo(() => ["board", "feed", "ledger", "ask", ...(isOwner ? ["engine"] : [])], [isOwner]);
 
   if (!user) return <div className="center muted">Signing you in…</div>;
 
@@ -89,9 +114,9 @@ export default function App() {
       ) : (
         <>
           <nav className="tabs">
-            {["board", "feed", "ledger", "ask"].map((t) => (
+            {tabs.map((t) => (
               <button key={t} className={tab === t ? "tab active" : "tab"} onClick={() => setTab(t)}>
-                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : "Ask the librarian"}
+                {TAB_LABELS[t]}
               </button>
             ))}
           </nav>
@@ -100,6 +125,7 @@ export default function App() {
             {tab === "feed" && <LiveFeed spaceId={space.id} />}
             {tab === "ledger" && <Ledger spaceId={space.id} />}
             {tab === "ask" && <AskPanel spaceId={space.id} />}
+            {tab === "engine" && isOwner && <EngineRoom space={space} />}
           </main>
         </>
       )}

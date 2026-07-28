@@ -104,6 +104,12 @@ Deno.serve(async (req: Request) => {
   const results: Record<string, unknown> = {};
   for (const space of spaces) {
     results[space.id] = await digestSpace(sr, token, space);
+    // analytics: best-effort, never breaks the digest run (only count spaces that actually got one)
+    if (results[space.id]) {
+      try {
+        (base44 as any).analytics?.track({ eventName: "digest_sent", properties: { space_id: space.id } });
+      } catch (_) { /* fire-and-forget */ }
+    }
   }
   return Response.json({ ok: true, results });
 });

@@ -59,6 +59,26 @@ Telegram group
 | **Email** | `SendEmail` weekly digests |
 | **Hosting** | SPA deployed to Base44 hosting |
 
+## Instrumented + observable
+
+Every pipeline completion point emits a best-effort **analytics event** (`base44.analytics.track`, each wrapped in try/catch so telemetry can never break the pipeline):
+
+| Event | Fired by | Properties |
+|---|---|---|
+| `compile_burst` | `process-messages` | `extracted`, `skipped` |
+| `ask_answered` | `ask` | `space_id`, `via` (telegram/dashboard) |
+| `research_run` | `research` | `space_id`, `sources` |
+| `nudge_sent` | `nudge-commitments` | `count` |
+| `digest_sent` | `weekly-digest` | `space_id` |
+| `receipt_parsed` | `ingest-media` | `space_id`, `amount`, `currency` |
+
+Two events are **cross-branch and intentionally not wired here** — their functions don't exist on `main` yet: `import_done{total}` belongs to ws-c's `import-history`, and `api_hit{resource}` to ws-a's `api`. Add them at those functions' completion points when those branches merge.
+
+Owners get an **Engine Room** tab (gated on `Membership.role === "owner"`): a terminal-style, auto-refreshing tail of the app's `appLogs.fetchLogs()` plus a rolling-counter row. Counters read from `Space.stats`, not analytics — `analytics.track()` is write-only (the SDK exposes no read/query API), so there is nothing to query back.
+
+![Engine Room — owner-only observability tab](docs/engine-room.png)
+<!-- screenshot placeholder: live app-log tail + Space.stats counters -->
+
 ## Repo layout
 
 ```
