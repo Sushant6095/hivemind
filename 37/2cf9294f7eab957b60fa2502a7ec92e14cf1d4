@@ -1,0 +1,22 @@
+base44/functions/telegram-webhook/entry.ts
+  s_a9a120c5d10337::t_fa544e239d2c35 118-135,139-141,143
+  s_a9a120c5d10337::t_0b77e14f693d65 144
+base44/functions/process-messages/entry.ts
+  s_a9a120c5d10337::t_adc30f98f1aa02 3-6,8-19,24-26,30-32,161-185,190-193,196-204
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "372cf9294f7eab957b60fa2502a7ec92e14cf1d4",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
