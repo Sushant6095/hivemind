@@ -1,0 +1,31 @@
+README.md
+  s_a9a120c5d10337::t_bbf824b68727b7 9-10
+docs/API.md
+  s_a9a120c5d10337::t_7037abbfe1c5cc 8,51
+extension/README.md
+  s_a9a120c5d10337::t_7924a7e5110645 14
+extension/sidepanel.html
+  s_a9a120c5d10337::t_35a08e16fed26e 30
+index.html
+  s_a9a120c5d10337::t_ff41539d388362 18,20,23,29
+landing.html
+  s_a9a120c5d10337::t_a29964d44ab8ab 10,12,15,21,228
+public/landing.html
+  s_a9a120c5d10337::t_3b0e38377c0f8e 10,12,15,21,228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "15bccd495311219a3ebfca6c18e024173230c6a9",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
