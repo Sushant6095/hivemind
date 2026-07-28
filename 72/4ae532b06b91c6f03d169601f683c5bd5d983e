@@ -1,0 +1,23 @@
+public/landing.html
+  s_a9a120c5d10337::t_dff54a2cee5472 338-339
+SETUP.md
+  s_a9a120c5d10337::t_3c94f656821478 34-35
+landing.html
+  s_a9a120c5d10337::t_98bf737afbfa58 338-339
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "724ae532b06b91c6f03d169601f683c5bd5d983e",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
