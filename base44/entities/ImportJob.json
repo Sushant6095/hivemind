@@ -1,0 +1,19 @@
+{
+  "name": "ImportJob",
+  "type": "object",
+  "properties": {
+    "space_id": { "type": "string" },
+    "status": { "type": "string", "enum": ["pending", "running", "done", "error"], "default": "pending" },
+    "total": { "type": "number", "default": 0 },
+    "done": { "type": "number", "default": 0 },
+    "error_text": { "type": "string" },
+    "member_emails": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["space_id"],
+  "rls": {
+    "read": { "member_emails": "{{user.email}}" },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

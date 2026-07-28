@@ -10,6 +10,17 @@ Hivemind is **not a chatbot**. Chatbots answer when spoken to. Hivemind is an ev
 2. On the dashboard, a **Decision**, an **Event** and a **Commitment** pop in — live.
 3. Friday morning, the bot nudges Priya in the group. Nobody wrote anything down.
 
+## Import a year of chat in one minute
+
+The bot only remembers from the moment it joins a group. The **Import** tab backfills the *past*: export the chat from Telegram Desktop (**⋮ → Export chat history → JSON, media off**), drop the `result.json` into the dashboard, and Hivemind replays every text message through the *same* compiler pass. Years of decisions, commitments, questions and events land on the board — with a live progress bar as they compile.
+
+- Upload goes to **private storage** (`UploadPrivateFile`); the `import-history` function reads it back via a signed URL.
+- Only plain-text messages are imported (media/service messages are skipped in v1); capped at 2,000 messages per run and idempotent on re-import (`tg_update_id` dedup).
+- An **ImportJob** entity streams `done / total` over realtime — the progress bar is just `entities.ImportJob.subscribe()`.
+
+![Import tab — pick your Telegram export](docs/import-panel.png)
+![History compiling live onto the board](docs/import-progress.png)
+
 ## Architecture
 
 ```
