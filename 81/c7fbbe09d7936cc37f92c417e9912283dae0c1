@@ -1,0 +1,61 @@
+src/styles.css
+  s_a9a120c5d10337::t_64532b106d151e 118-120,124-162,168-182
+  s_a9a120c5d10337::t_e89d1c57e299b8 121-123
+base44/functions/get-signed-url/entry.ts
+  s_a9a120c5d10337::t_d0fea06fa83976 1-28
+base44/functions/get-signed-url/function.jsonc
+  s_a9a120c5d10337::t_cc88a13fe6b727 1-4
+src/App.jsx
+  s_a9a120c5d10337::t_0d4d4a38a172f6 7-9
+  s_a9a120c5d10337::t_bf5f81943240e9 94,96,98,103,106
+  s_a9a120c5d10337::t_ff8584076cef8f 115
+src/components/ToastHost.jsx
+  s_a9a120c5d10337::t_06c99812b920a3 1-30
+src/main.jsx
+  s_a9a120c5d10337::t_edcdd845ee580e 7-13
+public/icon.svg
+  s_a9a120c5d10337::t_af065c9b38dd0a 2-5
+  s_a9a120c5d10337::t_2e42665878a4cf 1,6
+src/components/Board.jsx
+  s_a9a120c5d10337::t_2350a96ff6b43f 3-4,11,15,17-24,42,45-73,78-82,87-125,130-143,148-163,168-181,186-199,204-219,221-233
+src/components/AskPanel.jsx
+  s_a9a120c5d10337::t_20f07ba9bae1b4 3
+  s_a9a120c5d10337::t_62a8f53355d912 27-28,30
+src/components/StatsHeader.jsx
+  s_a9a120c5d10337::t_23fc3bc004431f 1-52
+src/lib/format.js
+  s_a9a120c5d10337::t_f764d4e32975e5 25-34
+src/lib/toast.js
+  s_a9a120c5d10337::t_e1bae0b37a6372 1-15
+src/lib/markdown.selfcheck.mjs
+  s_a9a120c5d10337::t_a206eea0581896 1-16
+README.md
+  s_a9a120c5d10337::t_61d34db8a6e02d 92-93
+  s_a9a120c5d10337::t_1cfce3d9f9b6b3 69
+src/components/Digest.jsx
+  s_a9a120c5d10337::t_0b9fab9ac1df38 1-86
+index.html
+  s_a9a120c5d10337::t_847d076f2e80e1 9-15
+public/manifest.json
+  s_a9a120c5d10337::t_d6176cc6b3ba79 1-14
+src/lib/markdown.js
+  s_a9a120c5d10337::t_255d30c5216e9d 1-52
+public/sw.js
+  s_a9a120c5d10337::t_a500da27af74c2 1-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "81c7fbbe09d7936cc37f92c417e9912283dae0c1",
+  "prompts": {},
+  "sessions": {
+    "s_a9a120c5d10337": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ac9670f-061f-4fa2-8b39-fb5bbc658f97",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Sushant <sj317772@gmail.com>"
+    }
+  }
+}
