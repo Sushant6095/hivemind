@@ -113,7 +113,7 @@ Deno.serve(async (req: Request) => {
   if (text.startsWith("/")) {
     const [cmd, ...rest] = text.split(" ");
     const arg = rest.join(" ").trim();
-    const bare = cmd.split("@")[0]; // "/ask@HivemindBot" → "/ask"
+    const bare = cmd.split("@")[0]; // "/ask@base44hive_bot" → "/ask"
 
     if (bare === "/start" || bare === "/help") {
       await tgSend(chatId, "🐝 I silently compile this chat into a live database. Try /ask, /research, /done, /digest.");

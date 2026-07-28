@@ -178,7 +178,7 @@ export default function App() {
           <div className="empty">
             <h2>No spaces yet</h2>
             <p>
-              Add <b>@HivemindBot</b> to any Telegram group, then open the claim link it posts. The group starts
+              Add <b>@base44hive_bot</b> to any Telegram group, then open the claim link it posts. The group starts
               compiling instantly — decisions, commitments, questions, events, expenses.
             </p>
           </div>
