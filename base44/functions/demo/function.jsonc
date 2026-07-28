@@ -1,0 +1,7 @@
+{
+  // Deliberately public, read-only snapshot of the single seeded demo space —
+  // the no-login path a judge lands on. Resolves its own space and ignores any
+  // caller-supplied id, so it cannot be aimed at a real group. See entry.ts.
+  "name": "demo",
+  "entry": "entry.ts"
+}

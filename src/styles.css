@@ -61,10 +61,20 @@ h1 { font-size: 22px; letter-spacing: 0.3px; }
 .card .answer { color: var(--green); }
 .card.danger { border-color: var(--red); }
 .card.dim { opacity: 0.45; }
-.meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+/* The meta row is a single line: a due-date on the left, then provenance and
+   actions pushed right. The left label is the only part allowed to give up
+   space — everything on the right is a hit target and must keep its size. */
+.meta {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+  font-size: 12px; color: var(--muted); min-width: 0;
+}
+.meta > :first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini {
   margin-left: auto; background: none; border: 1px solid var(--line); color: var(--green);
   border-radius: 6px; padding: 2px 8px; font-size: 11px; cursor: pointer;
+  /* "mark done" is two words; without this it breaks across two lines in a
+     narrow column and the button grows a ragged second row. */
+  white-space: nowrap; flex-shrink: 0;
 }
 .mini:hover { border-color: var(--green); }
 
@@ -116,7 +126,7 @@ h1 { font-size: 22px; letter-spacing: 0.3px; }
 .ask button:disabled { opacity: 0.5; cursor: default; }
 
 /* provenance link — sits in a card's .meta row */
-.src { margin-left: auto; color: var(--honey-dim); text-decoration: none; font-size: 11px; white-space: nowrap; }
+.src { margin-left: auto; color: var(--honey-dim); text-decoration: none; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
 .src:hover { color: var(--honey); }
 /* group a second right-side item next to the first (which owns margin-left:auto) */
 .meta .src + .mini,
@@ -280,3 +290,17 @@ footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line);
 .badge-running { color: var(--honey); border-color: var(--honey); }
 .badge-retrying { color: var(--honey-dim); border-color: var(--honey-dim); }
 .badge-dead { color: var(--red); border-color: var(--red); }
+
+/* --- no-login demo ------------------------------------------------------- */
+/* The anonymous landing state reuses the dashboard shell, so it only needs the
+   pieces the signed-in header doesn't have: its own action cluster (the generic
+   .row is centred and margin-topped for the splash card) and a button that
+   reads as a link inside running text. */
+.demo-actions { display: flex; gap: 8px; align-items: center; }
+.demo-actions a.chip { text-decoration: none; display: inline-flex; align-items: center; }
+.banner b { color: var(--text); }
+.linklike {
+  background: none; border: 0; padding: 0; font: inherit; color: var(--honey);
+  text-decoration: underline; cursor: pointer;
+}
+.linklike:hover { opacity: 0.85; }

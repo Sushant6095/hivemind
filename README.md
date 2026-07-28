@@ -24,7 +24,7 @@ Hivemind silently **compiles conversation into a live database** — decisions m
 ![Chrome](https://img.shields.io/badge/Chrome_MV3_Extension-4285F4?logo=googlechrome&logoColor=white)
 ![PWA](https://img.shields.io/badge/Installable_PWA-5A0FC8?logo=pwa&logoColor=white)
 
-**[▶ Open the live app](https://hivemind-6aebd8e4.base44.app)  ·  [Landing](https://hivemind-6aebd8e4.base44.app/landing.html)  ·  [API docs](docs/API.md)  ·  [Setup](SETUP.md)**
+**[▶ Open the live app](https://hivemind-6aebd8e4.base44.app)  ·  [👀 See a compiled group — no login](https://hivemind-6aebd8e4.base44.app/?demo=1)  ·  [Landing](https://hivemind-6aebd8e4.base44.app/landing.html)  ·  [API docs](docs/API.md)  ·  [Setup](SETUP.md)**
 
 </div>
 
@@ -175,6 +175,7 @@ erDiagram
 | **Service-role-only writes** | `create/update/delete: false` on all entities — only backend functions write. |
 | **Field-level privacy** | Telegram user ids are field-restricted to admins. |
 | **Provenance** | Every extraction carries `source_msg_ids`; the board deep-links **`sources ↗`** back to the exact Telegram message (`t.me/c/…`). |
+| **One deliberate public door** | [`demo`](base44/functions/demo/entry.ts) serves the no-login view. It resolves its *own* space (a caller-supplied `space_id` is impossible), never writes, and rebuilds every row through a named field allow-list — so `member_emails`, `who_tg_id` and storage handles cannot escape, including after a future schema change. [`tests/security.test.mjs`](tests/security.test.mjs) derives the list of space-scoped functions from source and fails if a new one skips the gate, or if `demo` ever loses one of those three properties. |
 
 ---
 
@@ -182,11 +183,12 @@ erDiagram
 
 | Surface | What | Code |
 |---|---|---|
-| 📊 **Realtime dashboard** | 8 live tabs (Board · Live feed · Ledger · Digest · Ask · Import · API · owner-only Engine Room) via `entities.subscribe()` | [`src/App.jsx`](src/App.jsx) |
+| 📊 **Realtime dashboard** | 9 live tabs (Board · Live feed · Ledger · Digest · Ask · Import · API · Ops · owner-only Engine Room) via `entities.subscribe()` | [`src/App.jsx`](src/App.jsx) |
+| 👀 **No-login demo** | [`/?demo=1`](https://hivemind-6aebd8e4.base44.app/?demo=1) — a real compiled space, served read-only to anonymous visitors by a field-allow-listed public function | [`demo`](base44/functions/demo/entry.ts) · [`DemoShell.jsx`](src/components/DemoShell.jsx) |
 | 🤖 **Telegram bot** | `/ask · /research · /done · /digest` + silent capture | [`telegram-webhook`](base44/functions/telegram-webhook/entry.ts) |
 | 🧩 **Chrome Sidekick** | MV3 side-panel pinning the feed beside any tab (`?panel=1` chrome-less mode) | [`extension/`](extension/) |
 | 🔌 **Headless API** | Keyed read API: `decisions·commitments·expenses·events·ledger` as clean JSON | [`api`](base44/functions/api/entry.ts) · [`docs/API.md`](docs/API.md) |
-| 🌐 **Landing page** | Self-contained Three.js / GSAP page, OG social cards | [`landing.html`](landing.html) |
+| 🌐 **Landing page** | Self-contained Three.js / GSAP page, OG social cards | [`public/landing.html`](public/landing.html) |
 | 📱 **Installable PWA** | manifest + service worker; works to ≤480px | [`public/manifest.json`](public/manifest.json) |
 
 <!-- GIF SLOT ② — Chrome Sidekick side panel opening beside a webpage. docs/gifs/sidekick.gif -->
@@ -200,10 +202,10 @@ erDiagram
 
 | Capability | Where it does real work |
 |---|---|
-| **Entities / DB** | 11 schemas ([`base44/entities/`](base44/entities/)) — Mongo-style queries (`$in`, `$gte`) across the pipeline |
+| **Entities / DB** | 14 schemas ([`base44/entities/`](base44/entities/)) — Mongo-style queries (`$in`, `$gte`) across the pipeline |
 | **Row + field-level security** | RLS block in every schema; denormalized `member_emails` |
 | **Realtime** | Board + Live feed are pure `entities.subscribe()` — the demo *is* realtime |
-| **Backend functions** | 13 Deno functions ([`base44/functions/`](base44/functions/)) |
+| **Backend functions** | 15 Deno functions ([`base44/functions/`](base44/functions/)) |
 | **AI / LLM** | Structured extraction on **Gemini 3 Flash** (cheap) + librarian answers on **Claude Sonnet 4.6** + `add_context_from_internet` research |
 | **AI agent** | [`librarian.jsonc`](base44/agents/librarian.jsonc) — least-privilege entity tools + research function |
 | **File & media storage** | `UploadPrivateFile` + signed URLs; receipts → `ExtractDataFromUploadedFile` → auto-split Expense ([`get-signed-url`](base44/functions/get-signed-url/entry.ts)) |
@@ -241,8 +243,8 @@ flowchart LR
 |---|---|
 | `base44 login` | device-code auth against the build account |
 | `base44 create -t backend-only` | register the app in-place (no scaffold clobber) |
-| `base44 entities push` | sync **11** schemas incl. RLS (full-sync) |
-| `base44 functions deploy` | ship **13** Deno functions |
+| `base44 entities push` | sync **14** schemas incl. RLS (full-sync) |
+| `base44 functions deploy` | ship **15** Deno functions |
 | `base44 agents push` | deploy the `librarian` agent |
 | `base44 secrets set` / `secrets list` | 4 runtime secrets, names-only readback |
 | `base44 site deploy` | host the SPA **+** `/landing.html` |
@@ -363,13 +365,13 @@ Full walkthrough → **[SETUP.md](SETUP.md)**.
 
 ```
 base44/
-  entities/     11 JSON schemas with RLS blocks
-  functions/    13 Deno functions (entry.ts + function.jsonc)
+  entities/     14 JSON schemas with RLS blocks
+  functions/    15 Deno functions (entry.ts + function.jsonc)
   agents/       librarian.jsonc
-src/            React dashboard (Vite) — 8 live panels, dark hive theme, PWA
+src/            React dashboard (Vite) — 9 live panels, dark hive theme, PWA
 extension/      Chrome MV3 "Sidekick" side-panel
 docs/           API.md · gifs/
-landing.html    self-contained Three.js/GSAP landing (also served at /landing.html)
+public/         self-contained Three.js/GSAP landing.html (served at /landing.html) · PWA manifest
 scripts/        bootstrap · set-webhook · push-to-github
 ```
 

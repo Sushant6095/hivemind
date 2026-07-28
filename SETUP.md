@@ -10,7 +10,7 @@ Every command in order. Steps 1–2 must run on **your** machine with **your** B
 
 ## 1. Create the Telegram bot (5 min)
 
-1. DM **@BotFather** → `/newbot` → name it (e.g. `HivemindBot`) → copy the **token**.
+1. DM **@BotFather** → `/newbot` → name it (e.g. `base44hive_bot`) → copy the **token**.
 2. **CRITICAL:** `/setprivacy` → select your bot → **Disable**. With privacy ON the bot cannot see group messages and nothing works.
 3. Optional polish: `/setuserpic`, `/setdescription` ("I compile your group chat into a live database").
 
@@ -31,7 +31,7 @@ base44 create                      # create the backend project — SAVE THE APP
 ## 3. Push the backend
 
 ```bash
-base44 entities push               # 11 schemas incl. RLS
+base44 entities push               # 14 schemas incl. RLS
 base44 functions deploy            # all 13 functions
 base44 agents push                 # librarian
 base44 types generate              # optional: typed SDK for the frontend

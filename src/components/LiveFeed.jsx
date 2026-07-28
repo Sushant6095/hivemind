@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { base44 } from "../api/base44Client.js";
+import { useSource } from "../api/source.jsx";
 import { timeAgo } from "../lib/format.js";
 
 // LiveFeed — the "compiler output" stream. Subscribes to every compiled entity
@@ -15,6 +15,7 @@ const KINDS = [
 ];
 
 export default function LiveFeed({ spaceId }) {
+  const src = useSource();
   const [items, setItems] = useState([]);
   const [pulse, setPulse] = useState(false);
   const seen = useRef(new Set());
@@ -26,7 +27,7 @@ export default function LiveFeed({ spaceId }) {
 
     for (const [name, icon, label] of KINDS) {
       // backfill
-      base44.entities[name].filter({ space_id: spaceId }, "-created_date", 20).then((rows) => {
+      src.filter(name, { space_id: spaceId }, "-created_date", 20).then((rows) => {
         setItems((cur) =>
           [...cur, ...rows.map((r) => ({ id: `${name}:${r.id}`, icon, text: label(r), at: r.created_date, kind: name, live: false }))]
             .sort((a, b) => new Date(b.at) - new Date(a.at))
@@ -35,7 +36,7 @@ export default function LiveFeed({ spaceId }) {
       });
       // live
       unsubs.push(
-        base44.entities[name].subscribe((event) => {
+        src.subscribe(name, (event) => {
           if (event.type !== "create" || event.data?.space_id !== spaceId) return;
           const key = `${name}:${event.id}`;
           if (seen.current.has(key)) return;
@@ -49,12 +50,17 @@ export default function LiveFeed({ spaceId }) {
       );
     }
     return () => unsubs.forEach((u) => u());
-  }, [spaceId]);
+  }, [spaceId, src]);
 
   return (
     <div className="feed">
       <div className={`compiler ${pulse ? "pulsing" : ""}`}>
-        <span className="dot" /> {pulse ? "compiling conversation…" : "watching the chat — this feed is live"}
+        <span className="dot" />{" "}
+        {src.demo
+          ? "snapshot of a real compiled group — realtime needs a signed-in session"
+          : pulse
+            ? "compiling conversation…"
+            : "watching the chat — this feed is live"}
       </div>
       {items.map((it) => (
         <div key={it.id} className={`feed-item pop ${it.live ? "fresh" : ""}`}>

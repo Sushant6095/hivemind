@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { base44, getUser, signIn } from "./api/base44Client.js";
 import Board from "./components/Board.jsx";
 import LiveFeed from "./components/LiveFeed.jsx";
@@ -11,6 +11,7 @@ import ToastHost from "./components/ToastHost.jsx";
 import ApiKeysPanel from "./components/ApiKeysPanel.jsx";
 import OpsPanel from "./components/OpsPanel.jsx";
 import EngineRoom from "./components/EngineRoom.jsx";
+import DemoShell from "./components/DemoShell.jsx";
 
 const TAB_LABELS = {
   board: "Board",
@@ -29,6 +30,9 @@ const TAB_LABELS = {
 
 // ?panel=1 → embedded (Chrome side panel) mode: chrome hidden, defaults to feed.
 const panelMode = new URLSearchParams(window.location.search).has("panel");
+// ?demo=1 → force the no-login demo even when signed in, so it's linkable and
+// reviewable without signing out.
+const forcedDemo = new URLSearchParams(window.location.search).get("demo") === "1";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -38,6 +42,11 @@ export default function App() {
   const [tab, setTab] = useState(panelMode ? "feed" : "board");
   const [isOwner, setIsOwner] = useState(false); // gates the owner-only Engine Room tab
   const [authChecked, setAuthChecked] = useState(false);
+  // The demo is the default anonymous view; this flips only if the `demo`
+  // function can't serve one, in which case we fall back to the sign-in card
+  // rather than showing a visitor an empty board.
+  const [demoDown, setDemoDown] = useState(false);
+  const demoUnavailable = useCallback(() => setDemoDown(true), []);
 
   useEffect(() => {
     if (panelMode) document.body.classList.add("panel-mode");
@@ -115,8 +124,16 @@ export default function App() {
 
   if (!authChecked) return <div className="center muted">Loading…</div>;
 
+  const code = new URLSearchParams(window.location.search).get("bind");
+
+  // A visitor with no session gets the product, not a door. The one exception is
+  // an invite link: ?bind=CODE means they came to claim a space, and the claim
+  // needs an account, so that path still leads with sign-in.
+  if ((forcedDemo || (!user && !code)) && !demoDown) {
+    return <DemoShell onUnavailable={demoUnavailable} />;
+  }
+
   if (!user) {
-    const code = new URLSearchParams(window.location.search).get("bind");
     return (
       <div className="center">
         <div className="empty">
@@ -130,10 +147,11 @@ export default function App() {
           <p>
             {code
               ? "Sign in to claim your space and open the dashboard."
-              : "Sign in to open your dashboard, or take the tour first."}
+              : "Sign in to open your dashboard, or look around a compiled group first."}
           </p>
           <div className="row">
             <button className="tab active" onClick={() => signIn()}>Sign in with Base44</button>
+            {!code && <a className="chip" href="/?demo=1">See a compiled group</a>}
             <a className="chip" href="/landing.html">Take the tour</a>
             <a
               className="chip"

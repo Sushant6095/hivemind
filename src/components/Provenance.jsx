@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "../api/base44Client.js";
+import { useSource } from "../api/source.jsx";
 import { fmtDate } from "../lib/format.js";
 
 // Provenance drawer — the receipts. Given a compiled row, show the exact source
@@ -18,6 +18,7 @@ const MAX_LOOKUPS = 12; // source_msg_ids is typically 1-3; bound the fan-out
 const FALLBACK_WINDOW = 200;
 
 export default function Provenance({ spaceId, item, onClose }) {
+  const src = useSource();
   const [msgs, setMsgs] = useState(null); // null = loading, [] = none found
   const [error, setError] = useState(false);
 
@@ -36,7 +37,7 @@ export default function Provenance({ spaceId, item, onClose }) {
     }
 
     const byId = ids.slice(0, MAX_LOOKUPS).map((id) =>
-      base44.entities.RawMessage.filter({ space_id: spaceId, tg_message_id: id }, undefined, 1),
+      src.filter("RawMessage", { space_id: spaceId, tg_message_id: id }, undefined, 1),
     );
 
     Promise.all(byId)
@@ -44,7 +45,7 @@ export default function Provenance({ spaceId, item, onClose }) {
         let found = results.flat().filter(Boolean);
         // Fallback: ids exist but exact lookup found nothing → try a window scan.
         if (found.length === 0) {
-          const recent = await base44.entities.RawMessage.filter({ space_id: spaceId }, "-sent_at", FALLBACK_WINDOW);
+          const recent = await src.filter("RawMessage", { space_id: spaceId }, "-sent_at", FALLBACK_WINDOW);
           const want = new Set(ids);
           found = recent.filter((m) => want.has(String(m.tg_message_id)));
         }
@@ -60,7 +61,7 @@ export default function Provenance({ spaceId, item, onClose }) {
     return () => {
       cancelled = true;
     };
-  }, [item, spaceId]);
+  }, [item, spaceId, src]);
 
   // Esc closes the drawer, matching the receipt modal's behaviour.
   useEffect(() => {

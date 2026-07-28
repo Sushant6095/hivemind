@@ -52,6 +52,12 @@ const CONTEXT_WINDOW = 15;
 const LEASE_TTL_MS = 150_000; // > worst-case LLM round trip
 const DAILY_LLM_CAP = 200; // per space, per UTC day
 const RETRY_BASE_MS = 30_000; // 30s → 60s → 120s → 240s → dead-letter
+
+// The retry schedule, as a function so it can be asserted in tests rather than
+// inferred from a magic expression buried in a catch block.
+function backoffMs(attempts: number) {
+  return RETRY_BASE_MS * Math.pow(2, Math.max(0, attempts - 1));
+}
 const MAX_ATTEMPTS = 5;
 
 async function acquireLease(sr: any, key: string) {
@@ -278,7 +284,7 @@ async function compileLocked(sr: any, spaceId: string, unprocessed: any[]) {
     // Exponential backoff: 30s, 60s, 120s, 240s, then dead-letter. Messages
     // stay processed:false — the reaper owns the retry, not this invocation.
     const attempts = job?.attempts ?? 1;
-    const delay = RETRY_BASE_MS * Math.pow(2, attempts - 1);
+    const delay = backoffMs(attempts);
     if (job?.id) {
       await sr.entities.CompileJob.update(job.id, {
         state: attempts >= MAX_ATTEMPTS ? "dead" : "retrying",

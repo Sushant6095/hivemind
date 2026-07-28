@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "../api/base44Client.js";
+import { useSource } from "../api/source.jsx";
 import { money } from "../lib/format.js";
 
 // StatsHeader — three-number pulse of a space: messages seen (from Space.stats,
@@ -9,6 +9,7 @@ import { money } from "../lib/format.js";
 const KINDS = ["Decision", "Commitment", "Question", "Event"];
 
 export default function StatsHeader({ space }) {
+  const src = useSource();
   const [compiled, setCompiled] = useState(null); // null = loading
   const [tracked, setTracked] = useState(0);
 
@@ -16,8 +17,8 @@ export default function StatsHeader({ space }) {
     let cancelled = false;
     setCompiled(null);
     Promise.all([
-      ...KINDS.map((k) => base44.entities[k].filter({ space_id: space.id }, undefined, 1000, 0, ["id"])),
-      base44.entities.Expense.filter({ space_id: space.id }, undefined, 1000, 0, ["id", "amount", "currency"]),
+      ...KINDS.map((k) => src.filter(k, { space_id: space.id }, undefined, 1000, 0, ["id"])),
+      src.filter("Expense", { space_id: space.id }, undefined, 1000, 0, ["id", "amount", "currency"]),
     ])
       .then((results) => {
         if (cancelled) return;
@@ -29,7 +30,7 @@ export default function StatsHeader({ space }) {
     return () => {
       cancelled = true;
     };
-  }, [space.id]);
+  }, [space.id, src]);
 
   const messages = space.stats?.messages_seen ?? 0;
 

@@ -5,3 +5,16 @@ dist/
 *.log
 .DS_Store
 package-lock.json
+
+tests/.generated/
+
+# Session scratch and the quarantine folder. The macOS mount this repo is
+# edited through cannot unlink, so deletions become moves into _to_delete/ —
+# which means it lives inside the working tree and must be ignored explicitly.
+_to_delete/
+.claude/
+
+# Machine-local app link. Its own header says "do not commit", and it exists
+# only to bind this checkout to a Base44 app id — a fresh clone runs
+# `base44 link` instead. config.jsonc (project config, no ids) IS committed.
+base44/.app.jsonc

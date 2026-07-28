@@ -1,0 +1,19 @@
+// Base44 Project Configuration
+// JSONC enables inline documentation and discoverability directly in config files.
+// Commented-out properties show available options you can enable.
+
+{
+  "name": "hivemind",
+
+  "visibility": "public",
+
+  // Site/hosting configuration
+  // Docs: https://docs.base44.com/configuration/hosting
+  // installCommand is `npm install` — this repo has no package-lock.json, so `npm ci` would fail.
+  "site": {
+    "buildCommand": "npm run build",
+    "serveCommand": "npm run dev",
+    "outputDirectory": "./dist",
+    "installCommand": "npm install"
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { base44 } from "../api/base44Client.js";
+import { useSource } from "../api/source.jsx";
 import { fmtDate, money, tgSourceLink } from "../lib/format.js";
 import { toast } from "../lib/toast.js";
 import Provenance from "./Provenance.jsx";
@@ -11,16 +12,15 @@ import Provenance from "./Provenance.jsx";
 // row was compiled from. Buttons inside a card must stopPropagation() or they
 // would also open the drawer.
 
-function useLiveEntity(name, spaceId) {
+function useLiveEntity(src, name, spaceId) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    const handler = base44.entities[name];
-    handler
-      .filter({ space_id: spaceId }, "-created_date", 100)
+    src
+      .filter(name, { space_id: spaceId }, "-created_date", 100)
       .then((r) => {
         if (cancelled) return;
         setRows(r);
@@ -28,7 +28,9 @@ function useLiveEntity(name, spaceId) {
       })
       .catch(() => !cancelled && setLoading(false));
 
-    const unsubscribe = handler.subscribe((event) => {
+    // On the demo source this is a no-op that still returns an unsubscribe, so
+    // the cleanup path below is the same in both modes.
+    const unsubscribe = src.subscribe(name, (event) => {
       const rec = event.data;
       if (rec?.space_id !== spaceId) return;
       setRows((cur) => {
@@ -44,7 +46,7 @@ function useLiveEntity(name, spaceId) {
       cancelled = true;
       unsubscribe();
     };
-  }, [name, spaceId]);
+  }, [src, name, spaceId]);
 
   return [rows, setRows, loading];
 }
@@ -100,11 +102,12 @@ function SkeletonCards() {
 
 export default function Board({ space }) {
   const spaceId = space.id;
-  const [decisions, , dLoading] = useLiveEntity("Decision", spaceId);
-  const [commitments, setCommitments, cLoading] = useLiveEntity("Commitment", spaceId);
-  const [questions, , qLoading] = useLiveEntity("Question", spaceId);
-  const [events, , eLoading] = useLiveEntity("Event", spaceId);
-  const [expenses, , xLoading] = useLiveEntity("Expense", spaceId);
+  const src = useSource();
+  const [decisions, , dLoading] = useLiveEntity(src, "Decision", spaceId);
+  const [commitments, setCommitments, cLoading] = useLiveEntity(src, "Commitment", spaceId);
+  const [questions, , qLoading] = useLiveEntity(src, "Question", spaceId);
+  const [events, , eLoading] = useLiveEntity(src, "Event", spaceId);
+  const [expenses, , xLoading] = useLiveEntity(src, "Expense", spaceId);
 
   const [receipt, setReceipt] = useState(null); // null | "loading" | url
   const [inspect, setInspect] = useState(null); // row whose provenance is open
@@ -118,17 +121,28 @@ export default function Board({ space }) {
   const closeCommitment = useCallback(
     async (c) => {
       setCommitments((cur) => cur.map((x) => (x.id === c.id ? { ...x, status: "done" } : x)));
+      // The demo is read-only by construction: mark-done requires membership, so
+      // an anonymous visitor would get a 403. Show the interaction, say plainly
+      // that it isn't persisted, and don't pretend otherwise.
+      if (src.demo) {
+        toast("Demo is read-only — sign in to close commitments for real.");
+        return;
+      }
       try {
         await base44.functions.invoke("mark-done", { space_id: spaceId, commitment_id: c.id });
       } catch {
         toast("Couldn't mark that done — try again.");
       }
     },
-    [spaceId, setCommitments],
+    [spaceId, setCommitments, src.demo],
   );
 
   const openReceipt = useCallback(
     async (fileUri) => {
+      if (src.demo) {
+        toast("Receipt images need a signed-in session — sign in to open them.");
+        return;
+      }
       const turn = ++receiptTurn.current;
       setReceipt("loading");
       try {
@@ -144,7 +158,7 @@ export default function Board({ space }) {
         toast("Couldn't open that receipt.");
       }
     },
-    [spaceId],
+    [spaceId, src.demo],
   );
 
   // Esc closes the receipt modal.
