@@ -8,16 +8,24 @@ import ImportPanel from "./components/ImportPanel.jsx";
 import Digest from "./components/Digest.jsx";
 import StatsHeader from "./components/StatsHeader.jsx";
 import ToastHost from "./components/ToastHost.jsx";
+import ApiKeysPanel from "./components/ApiKeysPanel.jsx";
 
 // Hivemind dashboard — one screen, deliberately thin: its whole job is to make
 // the backend visible. Every panel is fed by entity realtime subscriptions.
+
+// ?panel=1 → embedded (Chrome side panel) mode: chrome hidden, defaults to feed.
+const panelMode = new URLSearchParams(window.location.search).has("panel");
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [spaces, setSpaces] = useState([]);
   const [spaceId, setSpaceId] = useState(null);
   const [bindState, setBindState] = useState(null); // null | "binding" | "done" | "error"
-  const [tab, setTab] = useState("board");
+  const [tab, setTab] = useState(panelMode ? "feed" : "board");
+
+  useEffect(() => {
+    if (panelMode) document.body.classList.add("panel-mode");
+  }, []);
 
   // --- auth gate ----------------------------------------------------------
   useEffect(() => {
@@ -94,9 +102,9 @@ export default function App() {
         <>
           <StatsHeader space={space} />
           <nav className="tabs">
-            {["board", "feed", "ledger", "digest", "ask", "import"].map((t) => (
+            {["board", "feed", "ledger", "digest", "ask", "import", "api"].map((t) => (
               <button key={t} className={tab === t ? "tab active" : "tab"} onClick={() => setTab(t)}>
-                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : t === "digest" ? "Digest" : t === "ask" ? "Ask the librarian" : "Import"}
+                {t === "board" ? "Board" : t === "feed" ? "Live feed" : t === "ledger" ? "Ledger" : t === "digest" ? "Digest" : t === "ask" ? "Ask the librarian" : t === "import" ? "Import" : "API"}
               </button>
             ))}
           </nav>
@@ -107,6 +115,7 @@ export default function App() {
             {tab === "digest" && <Digest spaceId={space.id} />}
             {tab === "ask" && <AskPanel spaceId={space.id} />}
             {tab === "import" && <ImportPanel spaceId={space.id} />}
+            {tab === "api" && <ApiKeysPanel spaceId={space.id} />}
           </main>
         </>
       )}
